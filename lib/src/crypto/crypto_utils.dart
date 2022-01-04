@@ -133,6 +133,8 @@ String hexEncode(Uint8List message) {
 }
 
 Uint8List hexDecode(String message) {
+  if (message.length % 2 > 0) message = "0" + message;
+
   int len = (message.length / 2).floor();
   Uint8List output = Uint8List(len);
 
