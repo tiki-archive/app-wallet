@@ -74,5 +74,25 @@ void main() {
       String result = utf8.decode(keyPair.privateKey.decrypt(cipherText));
       expect(result, plainText);
     });
+
+    test('sign_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          await rsa.generate();
+      String message = "hello world";
+      Uint8List signature =
+          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
+      expect(signature.isNotEmpty, true);
+    });
+
+    test('verify_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          await rsa.generate();
+      String message = "hello world";
+      Uint8List signature =
+          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
+      bool verify = keyPair.publicKey
+          .verify(Uint8List.fromList(utf8.encode(message)), signature);
+      expect(verify, true);
+    });
   });
 }

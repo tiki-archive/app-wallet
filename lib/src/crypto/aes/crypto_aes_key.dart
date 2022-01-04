@@ -26,7 +26,7 @@ class CryptoAESKey {
 
   Uint8List encrypt(Uint8List plaintext) {
     if (this.key!.length != 32)
-      throw FormatException("key length must be 256-bits");
+      throw ArgumentError("key length must be 256-bits");
 
     Uint8List iv = utils.secureRandom().nextBytes(16);
     final cipher = PaddedBlockCipherImpl(
@@ -48,9 +48,9 @@ class CryptoAESKey {
 
   Uint8List decrypt(Uint8List cipherText) {
     if (this.key!.length != 32)
-      throw FormatException("key length must be 256-bits");
+      throw ArgumentError("key length must be 256-bits");
     if (cipherText.length < 16)
-      throw FormatException("cipher length must be > 128-bits");
+      throw ArgumentError("cipher length must be > 128-bits");
 
     Uint8List iv = cipherText.sublist(0, 16);
     Uint8List message = cipherText.sublist(16);

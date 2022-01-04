@@ -100,7 +100,7 @@ Uint8List processInBlocks(AsymmetricBlockCipher engine, Uint8List input) {
 
 Uint8List addPadding(Uint8List message, int blockSize, {int pad = 0}) {
   if (pad < 0 || pad > 255)
-    throw FormatException("pad value must be between 0 - 255");
+    throw ArgumentError("pad value must be between 0 - 255");
 
   int numPadding = (~message.length + 1) & (blockSize - 1);
   BytesBuilder padded = BytesBuilder();
@@ -112,7 +112,7 @@ Uint8List addPadding(Uint8List message, int blockSize, {int pad = 0}) {
 
 Uint8List removePadding(Uint8List message, {int pad = 0}) {
   if (pad < 0 || pad > 255)
-    throw FormatException("pad value must be between 0 - 255");
+    throw ArgumentError("pad value must be between 0 - 255");
 
   int paddingStart;
   for (paddingStart = message.length - 1;
