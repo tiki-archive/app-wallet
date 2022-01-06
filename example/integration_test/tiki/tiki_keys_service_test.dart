@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:wallet/src/keystore/keystore_model.dart';
 import 'package:wallet/src/keystore/keystore_service.dart';
+import 'package:wallet/src/tiki/keys/tiki_keys_model.dart';
 import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
 
 void main() {
@@ -18,15 +19,15 @@ void main() {
       FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
       TikiKeysService service = TikiKeysService(secureStorage: secureStorage);
-      String address = await service.generate();
+      TikiKeysModel tikiKeysModel = await service.generate();
 
       KeystoreService keystoreService =
           KeystoreService(secureStorage: secureStorage);
-      KeystoreModel? model = await keystoreService.get(address);
+      KeystoreModel? model = await keystoreService.get(tikiKeysModel.address);
 
-      expect(address.length, 44);
+      expect(tikiKeysModel.address.length, 44);
       expect(model != null, true);
-      expect(model!.address, address);
+      expect(model!.address, tikiKeysModel.address);
     });
   });
 }

@@ -9,18 +9,31 @@ import 'dart:typed_data';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/block/aes.dart';
 import 'package:pointycastle/block/modes/cbc.dart';
+import 'package:pointycastle/key_derivators/api.dart';
 import 'package:pointycastle/padded_block_cipher/padded_block_cipher_impl.dart';
 import 'package:pointycastle/paddings/pkcs7.dart';
 
 import '../crypto_utils.dart' as utils;
 
 class CryptoAESKey {
-  final Uint8List? key;
+  static const int _PBKDF2_ITERATIONS = 200000;
+
+  late final Uint8List? key;
 
   CryptoAESKey(this.key);
 
-  static CryptoAESKey decode(String encodedKey) =>
-      CryptoAESKey(base64.decode(encodedKey));
+  CryptoAESKey.decode(String encodedKey) : key = base64.decode(encodedKey);
+
+  CryptoAESKey.derive(String passphrase, {Uint8List? salt}) {
+    if (salt == null) salt = utils.secureRandom().nextBytes(16);
+
+    KeyDerivator keyDerivator = KeyDerivator('SHA-1/HMAC/PBKDF2');
+    Pbkdf2Parameters pbkdf2parameters =
+        Pbkdf2Parameters(salt, _PBKDF2_ITERATIONS, 32);
+    keyDerivator.init(pbkdf2parameters);
+
+    key = keyDerivator.process(Uint8List.fromList(utf8.encode(passphrase)));
+  }
 
   String encode() => base64.encode(this.key!);
 
@@ -67,5 +80,20 @@ class CryptoAESKey {
       );
 
     return utils.removePadding(cipher.process(message), pad: 0);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CryptoAESKey &&
+          runtimeType == other.runtimeType &&
+          key.toString() == other.key.toString();
+
+  @override
+  int get hashCode => key.hashCode;
+
+  @override
+  String toString() {
+    return 'CryptoAESKey{key: *****}';
   }
 }

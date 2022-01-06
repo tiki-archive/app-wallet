@@ -8,15 +8,16 @@ import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pointycastle/api.dart';
-import 'package:wallet/src/crypto/aes/crypto_aes.dart' as aes;
-import 'package:wallet/src/crypto/aes/crypto_aes_key.dart';
-import 'package:wallet/src/crypto/crypto_utils.dart' as cryptoutils;
-import 'package:wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
-import 'package:wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
-import 'package:wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
-import 'package:wallet/src/keystore/keystore_model.dart';
 
+import '../../crypto/aes/crypto_aes.dart' as aes;
+import '../../crypto/aes/crypto_aes_key.dart';
+import '../../crypto/crypto_utils.dart' as cryptoutils;
+import '../../crypto/rsa/crypto_rsa.dart' as rsa;
+import '../../crypto/rsa/crypto_rsa_private_key.dart';
+import '../../crypto/rsa/crypto_rsa_public_key.dart';
+import '../../keystore/keystore_model.dart';
 import '../../keystore/keystore_service.dart';
+import 'tiki_keys_model.dart';
 
 class TikiKeysService {
   static const String _chain = "TIKI";
@@ -25,7 +26,7 @@ class TikiKeysService {
   TikiKeysService({FlutterSecureStorage? secureStorage})
       : this._keystore = KeystoreService(secureStorage: secureStorage);
 
-  Future<String> generate() async {
+  Future<TikiKeysModel> generate() async {
     CryptoAESKey dataKey = await aes.generate();
     AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
         await rsa.generate();
@@ -35,12 +36,60 @@ class TikiKeysService {
         chain: _chain,
         signKey: signKeyPair.privateKey.encode(),
         dataKey: dataKey.encode()));
-    return address;
+    return TikiKeysModel(address, signKeyPair, dataKey);
   }
 
-  void provide() {}
+  Future<void> provide(TikiKeysModel model) => _keystore.add(KeystoreModel(
+      address: model.address,
+      chain: _chain,
+      signKey: model.sign.privateKey.encode(),
+      dataKey: model.data.encode()));
 
-  void recover() {}
+  void recover() {
+    //hash pin + email
+    //get encrypted keys
+    //decrypt
+    //cycle pin
+    //cycle pw
+
+    //use callbacks to wire in the multiple state funcs.
+  }
+
+  Future<void> backup(
+      String email, String pin, String passphrase, String address) async {
+    RegExp pinCheck = RegExp(r'[0-9]{6,}$');
+    RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
+    if (pinCheck.hasMatch(pin) && phraseCheck.hasMatch(passphrase))
+      throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
+
+    TikiKeysModel? keys = await get(
+        address); //idk about this, maybe the keys should be provided to the func.
+
+    if (keys != null) {
+      String ciphertext = base64.encode(keys.encrypt(passphrase));
+      String proofKey = base64.encode(cryptoutils
+          .sha256(Uint8List.fromList(utf8.encode(email + pin)), sha3: true));
+
+      //push to backup.
+    }
+  }
+
+  //feels like there should be a get QR code or something like that function,
+  //no reason to expose the actual keys to the application, right?
+  Future<TikiKeysModel?> get(String address) async {
+    KeystoreModel? model = await _keystore.get(address);
+    if (model != null && model.signKey != null && model.dataKey != null) {
+      CryptoRSAPrivateKey privateKey =
+          CryptoRSAPrivateKey.decode(model.signKey!);
+
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
+          new AsymmetricKeyPair(privateKey.public, privateKey);
+
+      CryptoAESKey dataKey = CryptoAESKey.decode(model.dataKey!);
+
+      return TikiKeysModel(address, signKeyPair, dataKey);
+    }
+  }
 
   String _address(CryptoRSAPublicKey publicKey) {
     if (publicKey.modulus == null || publicKey.exponent == null)
