@@ -45,35 +45,6 @@ class TikiKeysService {
       signKey: model.sign.privateKey.encode(),
       dataKey: model.data.encode()));
 
-  void recover() {
-    //hash pin + email
-    //get encrypted keys
-    //decrypt
-    //cycle pin
-    //cycle pw
-
-    //use callbacks to wire in the multiple state funcs.
-  }
-
-  Future<void> backup(
-      String email, String pin, String passphrase, String address) async {
-    RegExp pinCheck = RegExp(r'[0-9]{6,}$');
-    RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
-    if (pinCheck.hasMatch(pin) && phraseCheck.hasMatch(passphrase))
-      throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
-
-    TikiKeysModel? keys = await get(
-        address); //idk about this, maybe the keys should be provided to the func.
-
-    if (keys != null) {
-      String ciphertext = base64.encode(keys.encrypt(passphrase));
-      String proofKey = base64.encode(cryptoutils
-          .sha256(Uint8List.fromList(utf8.encode(email + pin)), sha3: true));
-
-      //push to backup.
-    }
-  }
-
   //feels like there should be a get QR code or something like that function,
   //no reason to expose the actual keys to the application, right?
   Future<TikiKeysModel?> get(String address) async {

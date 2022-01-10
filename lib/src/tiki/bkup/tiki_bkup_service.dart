@@ -7,13 +7,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:httpp/httpp.dart';
-import 'package:wallet/src/tiki/bkup/tiki_bkup_model_find_req.dart';
-import 'package:wallet/src/tiki/bkup/tiki_bkup_model_update_req.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
 
 import '../../crypto/crypto_utils.dart' as cryptoutils;
 import '../keys/tiki_keys_model.dart';
+import '../keys/tiki_keys_service.dart';
 import 'tiki_bkup_model_add_req.dart';
+import 'tiki_bkup_model_find_req.dart';
+import 'tiki_bkup_model_update_req.dart';
 import 'tiki_bkup_repository.dart';
 
 class TikiBkupService {

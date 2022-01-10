@@ -5,8 +5,8 @@
 
 import 'package:httpp/httpp.dart';
 import 'package:logging/logging.dart';
-import 'package:wallet/src/tiki/api/tiki_api_model_rsp.dart';
 
+import '../api/tiki_api_model_rsp.dart';
 import 'tiki_bkup_model_add_req.dart';
 import 'tiki_bkup_model_find_req.dart';
 import 'tiki_bkup_model_find_rsp.dart';
@@ -15,8 +15,7 @@ import 'tiki_bkup_model_update_req.dart';
 class TikiBkupRepository {
   final Logger _log = Logger('TikiBkupRepository');
 
-  //static const String _path = 'https://bouncer.mytiki.com/api/latest/backup';
-  static const String _path = 'http://localhost:10227/api/latest/backup';
+  static const String _path = 'https://bouncer.mytiki.com/api/latest/backup';
   static const String _pathAdd = _path + '/add';
   static const String _pathUpdate = _path + '/update';
   static const String _pathFind = _path + '/find';

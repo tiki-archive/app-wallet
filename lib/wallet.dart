@@ -3,4 +3,6 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-class Wallet {}
+export 'src/tiki/bkup/tiki_bkup_service.dart';
+export 'src/tiki/keys/tiki_keys_model.dart';
+export 'src/tiki/keys/tiki_keys_service.dart';
