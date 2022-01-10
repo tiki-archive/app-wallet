@@ -1,0 +1,29 @@
+name: wallet_example
+description: Demonstrates how to use the wallet plugin.
+
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  wallet:
+    path: ../
+  cupertino_icons: ^1.0.2
+  flutter_secure_storage: ^5.0.2
+  uuid: 3.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  test: any
+  flutter_lints: ^1.0.0
+
+flutter:
+  uses-material-design: true
