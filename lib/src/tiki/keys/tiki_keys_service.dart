@@ -45,8 +45,6 @@ class TikiKeysService {
       signKey: model.sign.privateKey.encode(),
       dataKey: model.data.encode()));
 
-  //feels like there should be a get QR code or something like that function,
-  //no reason to expose the actual keys to the application, right?
   Future<TikiKeysModel?> get(String address) async {
     KeystoreModel? model = await _keystore.get(address);
     if (model != null && model.signKey != null && model.dataKey != null) {

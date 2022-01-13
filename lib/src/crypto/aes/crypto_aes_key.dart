@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/block/aes.dart';
 import 'package:pointycastle/block/modes/cbc.dart';
@@ -87,7 +88,7 @@ class CryptoAESKey {
       identical(this, other) ||
       other is CryptoAESKey &&
           runtimeType == other.runtimeType &&
-          key.toString() == other.key.toString();
+          ListEquality().equals(key, other.key);
 
   @override
   int get hashCode => key.hashCode;
