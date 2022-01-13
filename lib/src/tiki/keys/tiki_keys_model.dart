@@ -23,6 +23,31 @@ class TikiKeysModel {
 
   TikiKeysModel(this.address, this.sign, this.data);
 
+  TikiKeysModel.fromCombinedString(String combinedKey){
+    List<String> combinedSplit = combinedKey.split(".");
+    String address = combinedSplit[0];
+    String dataString = combinedSplit[1];
+    String signKey = combinedSplit[2];
+    if (_areKeysValid(address, dataString, signKey)) {
+      CryptoRSAPrivateKey privateSignKey = CryptoRSAPrivateKey.decode(signKey);
+      CryptoRSAPublicKey publicSignKey = privateSignKey.public;
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
+        AsymmetricKeyPair(publicSignKey, privateSignKey);
+      CryptoAESKey dataKey = CryptoAESKey.decode(dataString);
+      this.address = address;
+      this.sign = signKeyPair;
+      this.data = dataKey;
+    }
+  }
+
+  bool _areKeysValid(
+    String? address, String? dataKeyPrivate, String? signKeyPrivate) {
+    var addressValid = address != null && address.length == 64;
+    var dataKeyValid = dataKeyPrivate != null && dataKeyPrivate.length == 1624;
+    var signKeyValid = signKeyPrivate != null && signKeyPrivate.length == 92;
+    return addressValid && dataKeyValid && signKeyValid;
+  }
+
   TikiKeysModel.decrypt(String passphrase, Uint8List ciphertext) {
     Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
     CryptoAESKey key = CryptoAESKey.derive(passphrase, salt: salt);
