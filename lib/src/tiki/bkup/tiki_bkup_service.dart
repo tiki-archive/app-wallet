@@ -10,7 +10,6 @@ import 'package:httpp/httpp.dart';
 
 import '../../crypto/crypto_utils.dart' as cryptoutils;
 import '../keys/tiki_keys_model.dart';
-import '../keys/tiki_keys_service.dart';
 import 'tiki_bkup_model_add_req.dart';
 import 'tiki_bkup_model_find_req.dart';
 import 'tiki_bkup_model_update_req.dart';
@@ -20,7 +19,7 @@ class TikiBkupService {
   final HttppClient _client;
   final TikiBkupRepository _repository;
 
-  TikiBkupService({Httpp? httpp, TikiKeysService? tikiKeysService})
+  TikiBkupService({Httpp? httpp})
       : _repository = TikiBkupRepository(),
         _client = httpp == null ? Httpp().client() : httpp.client();
 
@@ -61,6 +60,7 @@ class TikiBkupService {
         onError: onError,
         onSuccess: (rsp) async {
           try {
+            if (rsp.ciphertext == null) throw StateError('No ciphertext');
             TikiKeysModel keys = TikiKeysModel.decrypt(
                 passphrase, base64.decode(rsp.ciphertext!));
             if (onSuccess != null) onSuccess(keys);
