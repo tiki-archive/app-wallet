@@ -30,13 +30,13 @@ class TikiBkupService {
       required String passphrase,
       required TikiKeysModel keys,
       Function(Object)? onError,
-      Function()? onSuccess}) {
+      Function()? onSuccess}) async {
     RegExp pinCheck = RegExp(r'[0-9]{6,}$');
     RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
     if (!pinCheck.hasMatch(pin) || !phraseCheck.hasMatch(passphrase))
       throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
 
-    String ciphertext = base64.encode(keys.encrypt(passphrase));
+    String ciphertext = base64.encode(await keys.encrypt(passphrase));
     return _repository.add(
         client: _client,
         accessToken: accessToken,
@@ -52,7 +52,7 @@ class TikiBkupService {
       required String pin,
       required String passphrase,
       Function(Object)? onError,
-      Function(TikiKeysModel)? onSuccess}) {
+      Function(TikiKeysModel)? onSuccess}) async {
     return _repository.find(
         client: _client,
         accessToken: accessToken,
@@ -61,9 +61,9 @@ class TikiBkupService {
         onSuccess: (rsp) async {
           try {
             if (rsp.ciphertext == null) throw StateError('No ciphertext');
-            TikiKeysModel keys = TikiKeysModel.decrypt(
+            TikiKeysModel? keys = await TikiKeysModel.decrypt(
                 passphrase, base64.decode(rsp.ciphertext!));
-            if (onSuccess != null) onSuccess(keys);
+            if (onSuccess != null) onSuccess(keys!);
           } catch (error) {
             onError == null ? throw error : onError(error);
           }
@@ -78,13 +78,13 @@ class TikiBkupService {
       required String passphrase,
       required TikiKeysModel keys,
       Function(Object)? onError,
-      Function()? onSuccess}) {
+      Function()? onSuccess}) async {
     RegExp pinCheck = RegExp(r'[0-9]{6,}$');
     RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
     if (!pinCheck.hasMatch(newPin) || !phraseCheck.hasMatch(passphrase))
       throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
 
-    String ciphertext = base64.encode(keys.encrypt(passphrase));
+    String ciphertext = base64.encode(await keys.encrypt(passphrase));
     return _repository.update(
         client: _client,
         accessToken: accessToken,

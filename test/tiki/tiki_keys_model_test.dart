@@ -21,7 +21,7 @@ void main() {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);
-      Uint8List encrypted = model.encrypt('passphrase');
+      Uint8List encrypted = await model.encrypt('passphrase');
       expect(encrypted.isNotEmpty, true);
     });
 
@@ -30,8 +30,9 @@ void main() {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);
-      Uint8List ciphertext = model.encrypt('passphrase');
-      TikiKeysModel decrypted = TikiKeysModel.decrypt('passphrase', ciphertext);
+      Uint8List ciphertext = await model.encrypt('passphrase');
+      TikiKeysModel? decrypted =
+          await TikiKeysModel.decrypt('passphrase', ciphertext);
       expect(decrypted, model);
     });
   });

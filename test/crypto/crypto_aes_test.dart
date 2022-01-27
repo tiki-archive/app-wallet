@@ -34,7 +34,7 @@ void main() {
       CryptoAESKey key = await aes.generate();
       String plaintext = "hello";
       Uint8List cipherText =
-          key.encrypt(Uint8List.fromList(utf8.encode(plaintext)));
+          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key);
       expect(cipherText.isNotEmpty, true);
     });
 
@@ -42,23 +42,23 @@ void main() {
       CryptoAESKey key = await aes.generate();
       String plaintext = "hello";
       Uint8List cipherText =
-          key.encrypt(Uint8List.fromList(utf8.encode(plaintext)));
-      String result = utf8.decode(key.decrypt(cipherText));
+          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key);
+      String result = utf8.decode(await aes.decrypt(cipherText, key));
       expect(result, plaintext);
     });
 
     test('derive_success', () async {
       Uint8List salt = utils.secureRandom().nextBytes(16);
       String passphrase = 'passphrase';
-      CryptoAESKey key1 = CryptoAESKey.derive(passphrase, salt: salt);
-      CryptoAESKey key2 = CryptoAESKey.derive(passphrase, salt: salt);
+      CryptoAESKey key1 = await aes.derive(passphrase, salt: salt);
+      CryptoAESKey key2 = await aes.derive(passphrase, salt: salt);
 
       expect(key1.key, key2.key);
 
       String plaintext = "hello";
       Uint8List cipherText =
-          key1.encrypt(Uint8List.fromList(utf8.encode(plaintext)));
-      String result = utf8.decode(key1.decrypt(cipherText));
+          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key1);
+      String result = utf8.decode(await aes.decrypt(cipherText, key1));
       expect(result, plaintext);
     });
   });

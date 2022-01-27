@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'package:pointycastle/api.dart';
 
+import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/aes/crypto_aes_key.dart';
 import '../../crypto/crypto_utils.dart' as cryptoutils;
 import '../../crypto/rsa/crypto_rsa_private_key.dart';
@@ -29,23 +30,26 @@ class TikiKeysModel {
     this.data = CryptoAESKey.decode(data);
   }
 
-  TikiKeysModel.decrypt(String passphrase, Uint8List ciphertext) {
+  static Future<TikiKeysModel?> decrypt(
+      String passphrase, Uint8List ciphertext) async {
     Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
-    CryptoAESKey key = CryptoAESKey.derive(passphrase, salt: salt);
-    String plaintext = utf8.decode(key.decrypt(ciphertext.sublist(_SALT_LEN)));
+    CryptoAESKey key = await aes.derive(passphrase, salt: salt);
+    String plaintext =
+        utf8.decode(await aes.decrypt(ciphertext.sublist(_SALT_LEN), key));
     List<String> encodedKeys = plaintext.split(_DELIMITER);
     if (encodedKeys.length >= 3) {
-      address = encodedKeys.elementAt(0);
       CryptoRSAPrivateKey signPrivate =
           CryptoRSAPrivateKey.decode(encodedKeys.elementAt(1));
-      sign = AsymmetricKeyPair(signPrivate.public, signPrivate);
-      data = CryptoAESKey.decode(encodedKeys.elementAt(2));
+      return TikiKeysModel(
+          encodedKeys.elementAt(0),
+          AsymmetricKeyPair(signPrivate.public, signPrivate),
+          CryptoAESKey.decode(encodedKeys.elementAt(2)));
     }
   }
 
-  Uint8List encrypt(String passphrase) {
+  Future<Uint8List> encrypt(String passphrase) async {
     Uint8List salt = cryptoutils.secureRandom().nextBytes(_SALT_LEN);
-    CryptoAESKey key = CryptoAESKey.derive(passphrase, salt: salt);
+    CryptoAESKey key = await aes.derive(passphrase, salt: salt);
     String plaintext = address +
         _DELIMITER +
         sign.privateKey.encode() +
@@ -53,7 +57,8 @@ class TikiKeysModel {
         data.encode();
     BytesBuilder payload = BytesBuilder();
     payload.add(salt);
-    payload.add(key.encrypt(Uint8List.fromList(utf8.encode(plaintext))));
+    payload.add(
+        await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key));
     return payload.toBytes();
   }
 

@@ -55,8 +55,8 @@ void main() {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
           await ec.generate();
       String message = "hello world";
-      Uint8List signature =
-          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
+      Uint8List signature = await ec.sign(
+          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
       expect(signature.isNotEmpty, true);
     });
 
@@ -64,10 +64,10 @@ void main() {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
           await ec.generate();
       String message = "hello world";
-      Uint8List signature =
-          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
-      bool verify = keyPair.publicKey
-          .verify(Uint8List.fromList(utf8.encode(message)), signature);
+      Uint8List signature = await ec.sign(
+          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
+      bool verify = await ec.verify(Uint8List.fromList(utf8.encode(message)),
+          signature, keyPair.publicKey);
       expect(verify, true);
     });
   });
