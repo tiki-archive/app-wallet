@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pointycastle/api.dart';
 import 'package:pointycastle/asn1/asn1_parser.dart';
 import 'package:pointycastle/asn1/primitives/asn1_integer.dart';
 import 'package:pointycastle/asn1/primitives/asn1_object_identifier.dart';
@@ -14,7 +13,6 @@ import 'package:pointycastle/asn1/primitives/asn1_octet_string.dart';
 import 'package:pointycastle/asn1/primitives/asn1_sequence.dart';
 import 'package:pointycastle/ecc/api.dart';
 
-import '../crypto_utils.dart' as utils;
 import 'crypto_ec_public_key.dart';
 
 class CryptoECPrivateKey extends ECPrivateKey {
@@ -73,21 +71,5 @@ class CryptoECPrivateKey extends ECPrivateKey {
     sequence.add(privateKeyDer);
     sequence.encode();
     return base64.encode(sequence.encodedBytes!);
-  }
-
-  Uint8List sign(Uint8List message) {
-    Signer signer = Signer("SHA-256/ECDSA");
-    signer.init(
-        true,
-        ParametersWithRandom(
-            PrivateKeyParameter<ECPrivateKey>(this), utils.secureRandom()));
-    ECSignature signature = signer.generateSignature(message) as ECSignature;
-
-    BytesBuilder bytesBuilder = BytesBuilder();
-    Uint8List encodedR = utils.encodeBigInt(signature.r);
-    bytesBuilder.addByte(encodedR.length);
-    bytesBuilder.add(encodedR);
-    bytesBuilder.add(utils.encodeBigInt(signature.s));
-    return bytesBuilder.toBytes();
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pointycastle/api.dart';
 import 'package:pointycastle/asn1/asn1_object.dart';
 import 'package:pointycastle/asn1/asn1_parser.dart';
 import 'package:pointycastle/asn1/primitives/asn1_integer.dart';
@@ -14,12 +13,7 @@ import 'package:pointycastle/asn1/primitives/asn1_object_identifier.dart';
 import 'package:pointycastle/asn1/primitives/asn1_octet_string.dart';
 import 'package:pointycastle/asn1/primitives/asn1_sequence.dart';
 import 'package:pointycastle/asymmetric/api.dart';
-import 'package:pointycastle/asymmetric/oaep.dart';
-import 'package:pointycastle/asymmetric/rsa.dart';
-import 'package:pointycastle/digests/sha256.dart';
-import 'package:pointycastle/signers/rsa_signer.dart';
 
-import '../crypto_utils.dart' as utils;
 import 'crypto_rsa_public_key.dart';
 
 class CryptoRSAPrivateKey extends RSAPrivateKey {
@@ -95,18 +89,5 @@ class CryptoRSAPrivateKey extends RSAPrivateKey {
     sequence.add(privateKeyOctet);
     sequence.encode();
     return base64.encode(sequence.encodedBytes!);
-  }
-
-  Uint8List decrypt(Uint8List ciphertext) {
-    final decryptor = OAEPEncoding(RSAEngine())
-      ..init(false, PrivateKeyParameter<RSAPrivateKey>(this));
-    return utils.processInBlocks(decryptor, ciphertext);
-  }
-
-  Uint8List sign(Uint8List message) {
-    RSASigner signer = RSASigner(SHA256Digest(), '0609608648016503040201');
-    signer.init(true, PrivateKeyParameter<RSAPrivateKey>(this));
-    RSASignature signature = signer.generateSignature(message);
-    return signature.bytes;
   }
 }

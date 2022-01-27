@@ -57,8 +57,8 @@ void main() {
     test('encrypt_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           await rsa.generate();
-      Uint8List cipherText = keyPair.publicKey
-          .encrypt(Uint8List.fromList(utf8.encode("hello world")));
+      Uint8List cipherText = await rsa.encrypt(
+          Uint8List.fromList(utf8.encode("hello world")), keyPair.publicKey);
       String cipherTextString = String.fromCharCodes(cipherText);
 
       expect(cipherText.isNotEmpty, true);
@@ -69,9 +69,10 @@ void main() {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           await rsa.generate();
       String plainText = "hello world";
-      Uint8List cipherText =
-          keyPair.publicKey.encrypt(Uint8List.fromList(utf8.encode(plainText)));
-      String result = utf8.decode(keyPair.privateKey.decrypt(cipherText));
+      Uint8List cipherText = await rsa.encrypt(
+          Uint8List.fromList(utf8.encode(plainText)), keyPair.publicKey);
+      String result =
+          utf8.decode(await rsa.decrypt(cipherText, keyPair.privateKey));
       expect(result, plainText);
     });
 
@@ -79,8 +80,8 @@ void main() {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           await rsa.generate();
       String message = "hello world";
-      Uint8List signature =
-          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
+      Uint8List signature = await rsa.sign(
+          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
       expect(signature.isNotEmpty, true);
     });
 
@@ -88,10 +89,10 @@ void main() {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           await rsa.generate();
       String message = "hello world";
-      Uint8List signature =
-          keyPair.privateKey.sign(Uint8List.fromList(utf8.encode(message)));
-      bool verify = keyPair.publicKey
-          .verify(Uint8List.fromList(utf8.encode(message)), signature);
+      Uint8List signature = await rsa.sign(
+          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
+      bool verify = await rsa.verify(Uint8List.fromList(utf8.encode(message)),
+          signature, keyPair.publicKey);
       expect(verify, true);
     });
   });

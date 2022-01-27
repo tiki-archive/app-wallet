@@ -46,13 +46,4 @@ class TikiApiModelRsp<T> {
         'page': page?.toJson(),
         'messages': messages?.map((e) => e.toJson()).toList()
       };
-
-  static List<T>? listFromJson<T>(
-      List<dynamic>? json, Function(Map<String, dynamic>?) fromJson) {
-    if (json != null) {
-      List<T> res = [];
-      json.forEach((element) => res.add(fromJson(element)));
-      return res;
-    }
-  }
 }
