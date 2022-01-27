@@ -47,16 +47,18 @@ class TikiBkupService {
       required String accessToken,
       required String pin,
       Function(Object)? onError,
-      Function(Uint8List)? onSuccess}) async {
+      Function(Uint8List?)? onSuccess}) async {
     return _repository.find(
         client: _client,
         accessToken: accessToken,
         body: TikiBkupModelFindReq(email: _hash(email), pin: _hash(pin)),
         onError: onError,
-        onSuccess: (rsp) async {
+        onSuccess: (rsp) {
           try {
-            if (rsp.ciphertext == null) throw StateError('No ciphertext');
-            if (onSuccess != null) onSuccess(base64.decode(rsp.ciphertext!));
+            if (onSuccess != null)
+              onSuccess(rsp.ciphertext != null
+                  ? base64.decode(rsp.ciphertext!)
+                  : null);
           } catch (error) {
             onError == null ? throw error : onError(error);
           }
