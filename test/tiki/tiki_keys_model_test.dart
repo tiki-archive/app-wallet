@@ -13,26 +13,29 @@ import 'package:wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
 import 'package:wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
 import 'package:wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
 import 'package:wallet/src/tiki/keys/tiki_keys_model.dart';
+import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
 
 void main() {
   group('tiki-keys-model unit tests', () {
     test('encrypt_success', () async {
+      TikiKeysService keysService = TikiKeysService();
       CryptoAESKey dataKey = await aes.generate();
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);
-      Uint8List encrypted = await model.encrypt('passphrase');
+      Uint8List encrypted = await keysService.encrypt('passphrase', model);
       expect(encrypted.isNotEmpty, true);
     });
 
     test('decrypt_success', () async {
+      TikiKeysService keysService = TikiKeysService();
       CryptoAESKey dataKey = await aes.generate();
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);
-      Uint8List ciphertext = await model.encrypt('passphrase');
+      Uint8List ciphertext = await keysService.encrypt('passphrase', model);
       TikiKeysModel? decrypted =
-          await TikiKeysModel.decrypt('passphrase', ciphertext);
+          await keysService.decrypt('passphrase', ciphertext);
       expect(decrypted, model);
     });
   });

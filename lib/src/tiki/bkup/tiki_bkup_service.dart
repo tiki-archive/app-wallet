@@ -9,7 +9,6 @@ import 'dart:typed_data';
 import 'package:httpp/httpp.dart';
 
 import '../../crypto/crypto_utils.dart' as cryptoutils;
-import '../keys/tiki_keys_model.dart';
 import 'tiki_bkup_model_add_req.dart';
 import 'tiki_bkup_model_find_req.dart';
 import 'tiki_bkup_model_update_req.dart';
@@ -27,21 +26,18 @@ class TikiBkupService {
       {required String email,
       required String accessToken,
       required String pin,
-      required String passphrase,
-      required TikiKeysModel keys,
+      required Uint8List ciphertext,
       Function(Object)? onError,
       Function()? onSuccess}) async {
     RegExp pinCheck = RegExp(r'[0-9]{6,}$');
-    RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
-    if (!pinCheck.hasMatch(pin) || !phraseCheck.hasMatch(passphrase))
-      throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
-
-    String ciphertext = base64.encode(await keys.encrypt(passphrase));
+    if (!pinCheck.hasMatch(pin)) throw ArgumentError('pin must be 6+ digits');
     return _repository.add(
         client: _client,
         accessToken: accessToken,
         body: TikiBkupModelAddReq(
-            email: _hash(email), pin: _hash(pin), ciphertext: ciphertext),
+            email: _hash(email),
+            pin: _hash(pin),
+            ciphertext: base64.encode(ciphertext)),
         onSuccess: onSuccess,
         onError: onError);
   }
@@ -50,9 +46,8 @@ class TikiBkupService {
       {required String email,
       required String accessToken,
       required String pin,
-      required String passphrase,
       Function(Object)? onError,
-      Function(TikiKeysModel)? onSuccess}) async {
+      Function(Uint8List)? onSuccess}) async {
     return _repository.find(
         client: _client,
         accessToken: accessToken,
@@ -61,9 +56,7 @@ class TikiBkupService {
         onSuccess: (rsp) async {
           try {
             if (rsp.ciphertext == null) throw StateError('No ciphertext');
-            TikiKeysModel? keys = await TikiKeysModel.decrypt(
-                passphrase, base64.decode(rsp.ciphertext!));
-            if (onSuccess != null) onSuccess(keys!);
+            if (onSuccess != null) onSuccess(base64.decode(rsp.ciphertext!));
           } catch (error) {
             onError == null ? throw error : onError(error);
           }
@@ -75,16 +68,13 @@ class TikiBkupService {
       required String accessToken,
       required String oldPin,
       required String newPin,
-      required String passphrase,
-      required TikiKeysModel keys,
+      required Uint8List ciphertext,
       Function(Object)? onError,
       Function()? onSuccess}) async {
     RegExp pinCheck = RegExp(r'[0-9]{6,}$');
-    RegExp phraseCheck = RegExp(r'^[\x20-\x7E]{8,}$');
-    if (!pinCheck.hasMatch(newPin) || !phraseCheck.hasMatch(passphrase))
-      throw ArgumentError('pin must be 6+ digits and passphrase 8+ chars');
+    if (!pinCheck.hasMatch(newPin) && oldPin != newPin)
+      throw ArgumentError('new pin must be different and 6+ digits');
 
-    String ciphertext = base64.encode(await keys.encrypt(passphrase));
     return _repository.update(
         client: _client,
         accessToken: accessToken,
@@ -92,7 +82,7 @@ class TikiBkupService {
             email: _hash(email),
             oldPin: _hash(oldPin),
             newPin: _hash(newPin),
-            ciphertext: ciphertext),
+            ciphertext: base64.encode(ciphertext)),
         onError: onError,
         onSuccess: onSuccess);
   }
