@@ -32,8 +32,8 @@ class TikiApiModelRsp<T> {
         page = TikiApiModelRspPage().fromJson(json['page']);
 
       if (json['messages'] != null)
-        this.messages = json['messages']
-            .map((e) => TikiApiModelRspMessage.fromJson(json))
+        this.messages = (json['messages'] as List)
+            .map((e) => TikiApiModelRspMessage.fromJson(e))
             .toList();
     }
   }
