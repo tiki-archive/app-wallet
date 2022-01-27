@@ -5,8 +5,11 @@
 
 import 'package:httpp/httpp.dart';
 import 'package:logging/logging.dart';
+import 'package:wallet/src/tiki/api/tiki_api_model_rsp_message.dart';
 
 import '../api/tiki_api_model_rsp.dart';
+import 'tiki_bkup_error_http.dart';
+import 'tiki_bkup_error_lock.dart';
 import 'tiki_bkup_model_add_req.dart';
 import 'tiki_bkup_model_find_req.dart';
 import 'tiki_bkup_model_find_rsp.dart';
@@ -35,7 +38,12 @@ class TikiBkupRepository {
         onSuccess: (rsp) {
           if (onSuccess != null) onSuccess();
         },
-        onResult: onError,
+        onResult: (rsp) {
+          TikiApiModelRsp body =
+              TikiApiModelRsp.fromJson(rsp.body?.jsonBody, (json) {});
+          TikiBkupErrorHttp error = TikiBkupErrorHttp(body);
+          onError == null ? throw error : onError(error);
+        },
         onError: onError);
     _log.finest('${request.verb.value} — ${request.uri}');
     return client.request(request);
@@ -56,7 +64,12 @@ class TikiBkupRepository {
         onSuccess: (rsp) {
           if (onSuccess != null) onSuccess();
         },
-        onResult: onError,
+        onResult: (rsp) {
+          TikiApiModelRsp body =
+              TikiApiModelRsp.fromJson(rsp.body?.jsonBody, (json) {});
+          TikiBkupErrorHttp error = TikiBkupErrorHttp(body);
+          onError == null ? throw error : onError(error);
+        },
         onError: onError);
     _log.finest('${request.verb.value} — ${request.uri}');
     return client.request(request);
@@ -67,7 +80,6 @@ class TikiBkupRepository {
       String? accessToken,
       TikiBkupModelFindReq? body,
       void Function(TikiBkupModelFindRsp)? onSuccess,
-      void Function(TikiApiModelRsp)? onResult,
       void Function(Object)? onError}) {
     HttppRequest request = HttppRequest(
         uri: Uri.parse(_pathFind),
@@ -84,11 +96,20 @@ class TikiBkupRepository {
           }
         },
         onResult: (rsp) {
-          if (onResult != null) {
-            TikiApiModelRsp body =
-                TikiApiModelRsp.fromJson(rsp.body?.jsonBody, (json) {});
-            onResult(body);
-          }
+          TikiApiModelRsp body =
+              TikiApiModelRsp.fromJson(rsp.body?.jsonBody, (json) {});
+          Error error;
+          if (body.code == 403) {
+            Iterable<TikiApiModelRspMessage>? lockMsgs = body.messages
+                ?.where((e) => e.properties?.containsKey('LockCode') ?? false);
+            if (lockMsgs != null && lockMsgs.length > 0)
+              error =
+                  TikiBkupErrorLock(lockMsgs.first.properties!['LockCode']!);
+            else
+              error = TikiBkupErrorHttp(body);
+          } else
+            error = TikiBkupErrorHttp(body);
+          onError == null ? throw error : onError(error);
         },
         onError: onError);
     _log.finest('${request.verb.value} — ${request.uri}');
