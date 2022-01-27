@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logging/logging.dart';
 import 'package:pointycastle/api.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
@@ -23,6 +24,7 @@ class TikiKeysService {
   static const int _SALT_LEN = 16;
   static const String _DELIMITER = ',';
   static const String _chain = "TIKI";
+  final Logger _log = Logger('TikiKeysService');
   final KeystoreService _keystore;
 
   TikiKeysService({FlutterSecureStorage? secureStorage})
@@ -64,18 +66,22 @@ class TikiKeysService {
 
   Future<TikiKeysModel?> decrypt(
       String passphrase, Uint8List ciphertext) async {
-    Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
-    CryptoAESKey key = await aes.derive(passphrase, salt: salt);
-    String plaintext =
-        utf8.decode(await aes.decrypt(ciphertext.sublist(_SALT_LEN), key));
-    List<String> encodedKeys = plaintext.split(_DELIMITER);
-    if (encodedKeys.length >= 3) {
-      CryptoRSAPrivateKey signPrivate =
-          CryptoRSAPrivateKey.decode(encodedKeys.elementAt(1));
-      return TikiKeysModel(
-          encodedKeys.elementAt(0),
-          AsymmetricKeyPair(signPrivate.public, signPrivate),
-          CryptoAESKey.decode(encodedKeys.elementAt(2)));
+    try {
+      Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
+      CryptoAESKey key = await aes.derive(passphrase, salt: salt);
+      String plaintext =
+          utf8.decode(await aes.decrypt(ciphertext.sublist(_SALT_LEN), key));
+      List<String> encodedKeys = plaintext.split(_DELIMITER);
+      if (encodedKeys.length >= 3) {
+        CryptoRSAPrivateKey signPrivate =
+            CryptoRSAPrivateKey.decode(encodedKeys.elementAt(1));
+        return TikiKeysModel(
+            encodedKeys.elementAt(0),
+            AsymmetricKeyPair(signPrivate.public, signPrivate),
+            CryptoAESKey.decode(encodedKeys.elementAt(2)));
+      }
+    } catch (error) {
+      _log.warning(error);
     }
   }
 
