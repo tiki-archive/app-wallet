@@ -67,6 +67,7 @@ class TikiBkupRepository {
       String? accessToken,
       TikiBkupModelFindReq? body,
       void Function(TikiBkupModelFindRsp)? onSuccess,
+      void Function(TikiApiModelRsp)? onResult,
       void Function(Object)? onError}) {
     HttppRequest request = HttppRequest(
         uri: Uri.parse(_pathFind),
@@ -82,7 +83,13 @@ class TikiBkupRepository {
             onSuccess(body.data);
           }
         },
-        onResult: onError,
+        onResult: (rsp) {
+          if (onResult != null) {
+            TikiApiModelRsp body =
+                TikiApiModelRsp.fromJson(rsp.body?.jsonBody, (json) {});
+            onResult(body);
+          }
+        },
         onError: onError);
     _log.finest('${request.verb.value} — ${request.uri}');
     return client.request(request);

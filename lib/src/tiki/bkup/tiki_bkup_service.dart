@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:httpp/httpp.dart';
+import 'package:wallet/src/tiki/api/tiki_api_model_rsp_message.dart';
+import 'package:wallet/src/tiki/bkup/tiki_bkup_error_lock.dart';
 
 import '../../crypto/crypto_utils.dart' as cryptoutils;
 import 'tiki_bkup_model_add_req.dart';
@@ -47,16 +49,29 @@ class TikiBkupService {
       required String accessToken,
       required String pin,
       Function(Object)? onError,
-      Function(Uint8List)? onSuccess}) async {
+      Function(Uint8List?)? onSuccess}) async {
     return _repository.find(
         client: _client,
         accessToken: accessToken,
         body: TikiBkupModelFindReq(email: _hash(email), pin: _hash(pin)),
         onError: onError,
-        onSuccess: (rsp) async {
+        onResult: (rsp) {
+          if (rsp.code == 403) {
+            Iterable<TikiApiModelRspMessage>? lockMsgs = rsp.messages
+                ?.where((e) => e.properties?.containsKey('LockCode') ?? false);
+            if (lockMsgs != null && lockMsgs.length > 0) {
+              TikiBkupErrorLock error =
+                  TikiBkupErrorLock(lockMsgs.first.properties!['LockCode']!);
+              onError == null ? throw error : onError(error);
+            }
+          }
+        },
+        onSuccess: (rsp) {
           try {
-            if (rsp.ciphertext == null) throw StateError('No ciphertext');
-            if (onSuccess != null) onSuccess(base64.decode(rsp.ciphertext!));
+            if (onSuccess != null)
+              onSuccess(rsp.ciphertext != null
+                  ? base64.decode(rsp.ciphertext!)
+                  : null);
           } catch (error) {
             onError == null ? throw error : onError(error);
           }
