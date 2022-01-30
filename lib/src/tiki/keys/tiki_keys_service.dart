@@ -43,11 +43,23 @@ class TikiKeysService {
     return TikiKeysModel(address, signKeyPair, dataKey);
   }
 
-  Future<void> provide(TikiKeysModel model) => _keystore.add(KeystoreModel(
-      address: model.address,
-      chain: _chain,
-      signKey: model.sign.privateKey.encode(),
-      dataKey: model.data.encode()));
+  Future<void> provide(TikiKeysModel model) async {
+    try {
+      await _keystore.add(KeystoreModel(
+          address: model.address,
+          chain: _chain,
+          signKey: model.sign.privateKey.encode(),
+          dataKey: model.data.encode()));
+    } on StateError catch (error) {
+      _log.info(error);
+      await _keystore.remove(model.address);
+      return _keystore.add(KeystoreModel(
+          address: model.address,
+          chain: _chain,
+          signKey: model.sign.privateKey.encode(),
+          dataKey: model.data.encode()));
+    }
+  }
 
   Future<TikiKeysModel?> get(String address) async {
     KeystoreModel? model = await _keystore.get(address);

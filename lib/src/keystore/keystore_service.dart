@@ -20,7 +20,6 @@ class KeystoreService {
       throw ArgumentError("model.address cannot be null");
 
     bool exists = await _repository.exists(model.address!);
-    KeystoreModel? m = await _repository.get(model.address!);
     if (exists)
       throw StateError("model already exists. try removing it first.");
 
