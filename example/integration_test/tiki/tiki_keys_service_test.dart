@@ -29,5 +29,15 @@ void main() {
       expect(model != null, true);
       expect(model!.address, tikiKeysModel.address);
     });
+
+    test('provide_dupe_success', () async {
+      FlutterSecureStorage secureStorage = FlutterSecureStorage();
+
+      TikiKeysService service = TikiKeysService(secureStorage: secureStorage);
+      TikiKeysModel tikiKeysModel = await service.generate();
+      await service.provide(tikiKeysModel);
+
+      expect(tikiKeysModel.address.length, 44);
+    });
   });
 }
