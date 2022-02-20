@@ -20,6 +20,10 @@ dependencies:
     git:
       url: https://github.com/tiki/httpp
       ref: 0.0.3
+  localchain:
+    git:
+      url: https://github.com/tiki/localchain
+      ref: 0.0.2
 
 dev_dependencies:
   flutter_test:
