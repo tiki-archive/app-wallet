@@ -16,21 +16,22 @@ class TikiChainService {
 
   TikiChainService(this._keys);
 
-  // - init/load the cache
-  Future<void> open(String address) async {
-    _localchain = await Localchain().open(address);
+  Future<TikiChainService> open() async {
+    _localchain = await Localchain().open(_keys.address);
+    // - init/load the cache
+    return this;
   }
 
-  // write
-  Future<void> write(BlockContents contents) async {}
+  Future<Block> write(BlockContents contents) async {
+    Uint8List ciphertext = await _encrypt(contents);
+    return _localchain.append(ciphertext);
+  }
 
-  // read
-
-  Future<Uint8List> _encrypt(BlockContents contents) =>
-      aes.encrypt(Localchain.codec.encode(contents), _keys.data);
-
-  Future<BlockContents> _decrypt(Uint8List ciphertext) async {
+  Future<BlockContents> decrypt(Uint8List ciphertext) async {
     Uint8List plaintext = await aes.decrypt(ciphertext, _keys.data);
     return Localchain.codec.decode(plaintext);
   }
+
+  Future<Uint8List> _encrypt(BlockContents contents) =>
+      aes.encrypt(Localchain.codec.encode(contents), _keys.data);
 }
