@@ -16,6 +16,7 @@ dependencies:
   pointycastle: ^3.5.0
   flutter_secure_storage: ^5.0.2
   collection: ^1.15.0
+  sqflite_sqlcipher: ^2.1.0
   httpp:
     git:
       url: https://github.com/tiki/httpp
@@ -24,6 +25,13 @@ dependencies:
     git:
       url: https://github.com/tiki/localchain
       ref: 0.0.2
+
+dependency_overrides:
+  sqflite:
+    git:
+      url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
+      path: sqflite
+      ref: fmdb_override
 
 dev_dependencies:
   flutter_test:

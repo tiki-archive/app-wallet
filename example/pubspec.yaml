@@ -12,8 +12,21 @@ dependencies:
   wallet:
     path: ../
   cupertino_icons: ^1.0.2
+  logging: ^1.0.2
   flutter_secure_storage: ^5.0.2
+  sqflite_sqlcipher: ^2.1.0
   uuid: 3.0.5
+  localchain:
+    git:
+      url: https://github.com/tiki/localchain
+      ref: 0.0.2
+
+dependency_overrides:
+  sqflite:
+    git:
+      url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
+      path: sqflite
+      ref: fmdb_override
 
 dev_dependencies:
   flutter_test:
