@@ -12,16 +12,18 @@ class KeystoreService {
   final KeystoreRepository _repository;
 
   KeystoreService({FlutterSecureStorage? secureStorage})
-      : this._repository =
-            KeystoreRepository(secureStorage ?? FlutterSecureStorage());
+      : _repository =
+            KeystoreRepository(secureStorage ?? const FlutterSecureStorage());
 
   Future<void> add(KeystoreModel model) async {
-    if (model.address == null)
+    if (model.address == null) {
       throw ArgumentError("model.address cannot be null");
+    }
 
     bool exists = await _repository.exists(model.address!);
-    if (exists)
+    if (exists) {
       throw StateError("model already exists. try removing it first.");
+    }
 
     _repository.save(model);
   }

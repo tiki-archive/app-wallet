@@ -15,14 +15,14 @@ class CryptoAESKey {
 
   CryptoAESKey.decode(String encodedKey) : key = base64.decode(encodedKey);
 
-  String encode() => base64.encode(this.key!);
+  String encode() => base64.encode(key!);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is CryptoAESKey &&
           runtimeType == other.runtimeType &&
-          ListEquality().equals(key, other.key);
+          const ListEquality().equals(key, other.key);
 
   @override
   int get hashCode => key.hashCode;

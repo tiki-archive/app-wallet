@@ -10,11 +10,13 @@ import 'package:pointycastle/api.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 
 FortunaRandom secureRandom() {
-  var secureRandom = new FortunaRandom();
-  var random = new Random.secure();
+  var secureRandom = FortunaRandom();
+  var random = Random.secure();
   final seeds = <int>[];
-  for (int i = 0; i < 32; i++) seeds.add(random.nextInt(255));
-  secureRandom.seed(new KeyParameter(new Uint8List.fromList(seeds)));
+  for (int i = 0; i < 32; i++) {
+    seeds.add(random.nextInt(255));
+  }
+  secureRandom.seed(KeyParameter(Uint8List.fromList(seeds)));
   return secureRandom;
 }
 
@@ -99,25 +101,29 @@ Uint8List processInBlocks(AsymmetricBlockCipher engine, Uint8List input) {
 }
 
 Uint8List addPadding(Uint8List message, int blockSize, {int pad = 0}) {
-  if (pad < 0 || pad > 255)
+  if (pad < 0 || pad > 255) {
     throw ArgumentError("pad value must be between 0 - 255");
+  }
 
   int numPadding = (~message.length + 1) & (blockSize - 1);
   BytesBuilder padded = BytesBuilder();
   padded.add(message);
-  for (int i = 0; i < numPadding; i++) padded.add([pad]);
+  for (int i = 0; i < numPadding; i++) {
+    padded.add([pad]);
+  }
 
   return padded.toBytes();
 }
 
 Uint8List removePadding(Uint8List message, {int pad = 0}) {
-  if (pad < 0 || pad > 255)
+  if (pad < 0 || pad > 255) {
     throw ArgumentError("pad value must be between 0 - 255");
+  }
 
   int paddingStart;
   for (paddingStart = message.length - 1;
       paddingStart > 0 && message.elementAt(paddingStart) == pad;
-      paddingStart--);
+      paddingStart--) {}
   return message.sublist(0, paddingStart + 1);
 }
 
@@ -128,7 +134,9 @@ Uint8List sha256(Uint8List message, {bool sha3 = false}) {
 
 String hexEncode(Uint8List message) {
   String s = "";
-  message.forEach((e) => s += e.toRadixString(16).padLeft(2, "0"));
+  for (var e in message) {
+    s += e.toRadixString(16).padLeft(2, "0");
+  }
   return s;
 }
 

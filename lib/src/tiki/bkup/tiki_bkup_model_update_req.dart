@@ -14,10 +14,10 @@ class TikiBkupModelUpdateReq {
 
   TikiBkupModelUpdateReq.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
-      this.email = json['email'];
-      this.oldPin = json['oldPin'];
-      this.newPin = json['newPin'];
-      this.ciphertext = json['ciphertext'];
+      email = json['email'];
+      oldPin = json['oldPin'];
+      newPin = json['newPin'];
+      ciphertext = json['ciphertext'];
     }
   }
 

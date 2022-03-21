@@ -38,7 +38,7 @@ AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> _generate(_) {
 }
 
 Future<Uint8List> sign(Uint8List message, CryptoECPrivateKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['message'] = base64.encode(message);
   q['key'] = key.encode();
   return compute(_sign, q).then((signature) => signature);
@@ -64,7 +64,7 @@ Uint8List _sign(Map<String, String> q) {
 
 Future<bool> verify(
     Uint8List message, Uint8List signature, CryptoECPublicKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['message'] = base64.encode(message);
   q['signature'] = base64.encode(signature);
   q['key'] = key.encode();

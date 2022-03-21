@@ -14,9 +14,6 @@ import 'package:wallet/src/crypto/aes/crypto_aes.dart' as aes;
 import 'package:wallet/src/tiki/chain/tiki_chain_props_key.dart';
 import 'package:wallet/src/tiki/chain/tiki_chain_props_model.dart';
 import 'package:wallet/src/tiki/chain/tiki_chain_props_repository.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_service.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_model.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
 import 'package:wallet/wallet.dart';
 
 void main() {
@@ -60,9 +57,6 @@ void main() {
       Database database = await openDatabase(
           await getDatabasesPath() + '/${Uuid().v4()}.db',
           singleInstance: true);
-
-      TikiChainService chainService =
-          await TikiChainService(keys).open(database);
 
       await Future.delayed(Duration(minutes: 1));
 

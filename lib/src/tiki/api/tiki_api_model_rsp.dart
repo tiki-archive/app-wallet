@@ -16,8 +16,8 @@ class TikiApiModelRsp<T> {
   TikiApiModelRsp(
       {this.status, this.code, this.data, this.page, this.messages});
 
-  TikiApiModelRsp.fromJson(
-      Map<String, dynamic>? json, T fromJson(Map<String, dynamic>? json)) {
+  TikiApiModelRsp.fromJson(Map<String, dynamic>? json,
+      T Function(Map<String, dynamic>? json) fromJson) {
     if (json != null) {
       status = json['status'];
       code = json['code'];
@@ -28,17 +28,18 @@ class TikiApiModelRsp<T> {
             : fromJson(json['data']);
       }
 
-      if (json['page'] != null)
+      if (json['page'] != null) {
         page = TikiApiModelRspPage().fromJson(json['page']);
+      }
 
-      if (json['messages'] != null)
-        this.messages = (json['messages'] as List)
+      if (json['messages'] != null) {
+        messages = (json['messages'] as List)
             .map((e) => TikiApiModelRspMessage.fromJson(e))
             .toList();
+      }
     }
   }
 
-  @override
   Map<String, dynamic> toJson() => {
         'status': status,
         'code': code,

@@ -10,7 +10,7 @@ class TikiBkupModelFindRsp {
 
   TikiBkupModelFindRsp.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
-      this.ciphertext = json['ciphertext'];
+      ciphertext = json['ciphertext'];
     }
   }
 

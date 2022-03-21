@@ -12,9 +12,9 @@ class TikiBkupModelAddReq {
 
   TikiBkupModelAddReq.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
-      this.email = json['email'];
-      this.pin = json['pin'];
-      this.ciphertext = json['ciphertext'];
+      email = json['email'];
+      pin = json['pin'];
+      ciphertext = json['ciphertext'];
     }
   }
 

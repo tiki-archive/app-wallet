@@ -13,10 +13,10 @@ class KeystoreModel {
 
   KeystoreModel.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
-      this.address = json['address'];
-      this.chain = json['chain'];
-      this.signKey = json['sign_key'];
-      this.dataKey = json['data_key'];
+      address = json['address'];
+      chain = json['chain'];
+      signKey = json['sign_key'];
+      dataKey = json['data_key'];
     }
   }
 

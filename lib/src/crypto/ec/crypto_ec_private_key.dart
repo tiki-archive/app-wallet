@@ -20,10 +20,9 @@ class CryptoECPrivateKey extends ECPrivateKey {
       : super(d, parameters);
 
   static CryptoECPrivateKey decode(String encodedKey) {
-    ASN1Parser topLevelParser = new ASN1Parser(base64.decode(encodedKey));
+    ASN1Parser topLevelParser = ASN1Parser(base64.decode(encodedKey));
     ASN1Sequence topLevelSeq = topLevelParser.nextObject() as ASN1Sequence;
 
-    ASN1Integer version = topLevelSeq.elements![0] as ASN1Integer;
     ASN1Sequence algorithmSeq = topLevelSeq.elements![1] as ASN1Sequence;
     ASN1OctetString privateKeyOctet =
         topLevelSeq.elements![2] as ASN1OctetString;
@@ -34,7 +33,6 @@ class CryptoECPrivateKey extends ECPrivateKey {
 
     ASN1Sequence privateKeySeq =
         ASN1Sequence.fromBytes(privateKeyOctet.octets as Uint8List);
-    ASN1Integer privateKeyVersion = privateKeySeq.elements![0] as ASN1Integer;
     ASN1OctetString privateKeyValue =
         privateKeySeq.elements![1] as ASN1OctetString;
     ASN1Integer privateKeyBigInt =
@@ -44,7 +42,7 @@ class CryptoECPrivateKey extends ECPrivateKey {
   }
 
   CryptoECPublicKey get public =>
-      CryptoECPublicKey(this.parameters!.G * this.d, this.parameters);
+      CryptoECPublicKey(parameters!.G * d, parameters);
 
   String encode() {
     ASN1Sequence sequence = ASN1Sequence();
@@ -56,7 +54,7 @@ class CryptoECPrivateKey extends ECPrivateKey {
     ASN1Sequence encodedPrivateKey = ASN1Sequence();
     ASN1Integer encodedPrivateKeyVersion = ASN1Integer(BigInt.from(1));
     ASN1OctetString encodedPrivateKeyValue = ASN1OctetString();
-    ASN1Integer encodePrivateKeyBigInt = ASN1Integer(this.d);
+    ASN1Integer encodePrivateKeyBigInt = ASN1Integer(d);
     encodePrivateKeyBigInt.encode();
     encodedPrivateKeyValue.octets = encodePrivateKeyBigInt.valueBytes;
     encodedPrivateKey.add(encodedPrivateKeyVersion);

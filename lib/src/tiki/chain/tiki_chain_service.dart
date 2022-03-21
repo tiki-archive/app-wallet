@@ -29,8 +29,9 @@ class TikiChainService {
   TikiChainService(this._keys);
 
   Future<TikiChainService> open(Database database) async {
-    if (!database.isOpen)
+    if (!database.isOpen) {
       throw ArgumentError.value(database, 'database', 'database is not open');
+    }
 
     _cacheRepository = TikiChainCacheRepository(database);
     _propsRepository = TikiChainPropsRepository(database);
@@ -65,12 +66,14 @@ class TikiChainService {
 
   Future<TikiChainCacheBlock?> read(Uint8List hash) async {
     TikiChainCacheModel? cache = await _cacheRepository.get(hash);
-    if (cache != null)
+    if (cache != null) {
       return TikiChainCacheBlock(
           hash: cache.hash,
           plaintextContents: cache.contents,
           previousHash: cache.previousHash,
           created: cache.created);
+    }
+    return null;
   }
 
   Future<void> build() async {
@@ -146,12 +149,13 @@ class TikiChainService {
           schema: decrypted.schema));
     }
     await _cacheRepository.transaction((txn) async {
-      cache.forEach((block) async {
+      for (var block in cache) {
         await _cacheRepository.insert(block, txn: txn);
-      });
+      }
     });
     _log.finest('added ${cache.length} blocks to cache');
-    if (blocks.length > batch)
+    if (blocks.length > batch) {
       return _batchBuild(blocks.sublist(batch), batch: batch);
+    }
   }
 }
