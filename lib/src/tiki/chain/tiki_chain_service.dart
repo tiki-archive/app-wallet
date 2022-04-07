@@ -3,6 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:localchain/localchain.dart';
@@ -11,6 +12,7 @@ import 'package:pointycastle/digests/sha256.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
+import '../../crypto/crypto_utils.dart';
 import '../keys/tiki_keys_model.dart';
 import 'tiki_chain_cache_block.dart';
 import 'tiki_chain_cache_model.dart';
@@ -62,6 +64,13 @@ class TikiChainService {
         plaintextContents: plaintextContents,
         previousHash: block.previousHash,
         created: block.created);
+  }
+
+  Future<TikiChainCacheBlock> mint(Uint8List bytes) async {
+    Uint8List proof = secureRandom().nextBytes(32);
+    Uint8List fingerprint = sha256(proof, sha3: true);
+    return write(BlockContentsDataNft(
+        fingerprint: base64.encode(fingerprint), proof: base64.encode(proof)));
   }
 
   Future<TikiChainCacheBlock?> read(Uint8List hash) async {
