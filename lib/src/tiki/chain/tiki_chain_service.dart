@@ -38,12 +38,13 @@ class TikiChainService {
     await _propsRepository.createTable();
     _localchain = await Localchain().open(_keys.address);
 
-    TikiChainPropsModel? createdOn =
+    TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
-    if (createdOn == null) build();
+    if (cachedOn == null) build();
     return this;
   }
 
+  //note: think about if we need a special case for writes when cache is still building.
   Future<TikiChainCacheBlock> write(BlockContents contents) async {
     Uint8List ciphertext = await _encrypt(contents);
     Block block = await _localchain.append(ciphertext);
@@ -73,6 +74,7 @@ class TikiChainService {
           created: cache.created);
   }
 
+  //TODO one day this will blow up because we can't hold like 50k blocks in memory.
   Future<void> build() async {
     List<Block> blocks = await _localchain.get(
         pageSize: 1000,
