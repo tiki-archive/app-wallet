@@ -21,6 +21,8 @@ void main() {
       TikiKeysService service = TikiKeysService(secureStorage: secureStorage);
       TikiKeysModel tikiKeysModel = await service.generate();
 
+      String k = tikiKeysModel.sign.publicKey.encode();
+
       KeystoreService keystoreService =
           KeystoreService(secureStorage: secureStorage);
       KeystoreModel? model = await keystoreService.get(tikiKeysModel.address);
