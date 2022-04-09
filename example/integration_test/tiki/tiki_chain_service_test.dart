@@ -58,10 +58,13 @@ void main() {
           await getDatabasesPath() + '/${Uuid().v4()}.db',
           singleInstance: true);
 
+      await TikiChainService(keys).open(database);
+
       await Future.delayed(Duration(minutes: 1));
 
       TikiChainPropsRepository propsRepository =
           TikiChainPropsRepository(database);
+
       TikiChainPropsModel? createdOn =
           await propsRepository.get(TikiChainPropsKey.cachedOn);
       expect(createdOn != null, true);
