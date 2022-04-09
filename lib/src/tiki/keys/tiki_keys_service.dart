@@ -28,7 +28,7 @@ class TikiKeysService {
   final KeystoreService _keystore;
 
   TikiKeysService({FlutterSecureStorage? secureStorage})
-      : this._keystore = KeystoreService(secureStorage: secureStorage);
+      : _keystore = KeystoreService(secureStorage: secureStorage);
 
   Future<TikiKeysModel> generate() async {
     CryptoAESKey dataKey = await aes.generate();
@@ -68,12 +68,13 @@ class TikiKeysService {
           CryptoRSAPrivateKey.decode(model.signKey!);
 
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
-          new AsymmetricKeyPair(privateKey.public, privateKey);
+          AsymmetricKeyPair(privateKey.public, privateKey);
 
       CryptoAESKey dataKey = CryptoAESKey.decode(model.dataKey!);
 
       return TikiKeysModel(address, signKeyPair, dataKey);
     }
+    return null;
   }
 
   Future<TikiKeysModel?> decrypt(
@@ -95,6 +96,7 @@ class TikiKeysService {
     } catch (error) {
       _log.warning(error);
     }
+    return null;
   }
 
   Future<Uint8List> encrypt(String passphrase, TikiKeysModel keys) async {
@@ -113,8 +115,9 @@ class TikiKeysService {
   }
 
   String _address(CryptoRSAPublicKey publicKey) {
-    if (publicKey.modulus == null || publicKey.exponent == null)
+    if (publicKey.modulus == null || publicKey.exponent == null) {
       throw ArgumentError("modulus and exponent required");
+    }
 
     String raw = publicKey.modulus!.toRadixString(16);
     raw += publicKey.exponent!.toRadixString(16);

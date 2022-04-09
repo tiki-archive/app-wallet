@@ -33,8 +33,9 @@ class TikiBkupService {
           Function()? onSuccess}) =>
       _auth(accessToken, onError, (token, onError) {
         RegExp pinCheck = RegExp(r'[0-9]{6,}$');
-        if (!pinCheck.hasMatch(pin))
+        if (!pinCheck.hasMatch(pin)) {
           throw ArgumentError('pin must be 6+ digits');
+        }
         return _repository.add(
             client: _client,
             accessToken: token,
@@ -62,10 +63,11 @@ class TikiBkupService {
               onError: onError,
               onSuccess: (rsp) {
                 try {
-                  if (onSuccess != null)
+                  if (onSuccess != null) {
                     onSuccess(rsp.ciphertext != null
                         ? base64.decode(rsp.ciphertext!)
                         : null);
+                  }
                 } catch (error) {
                   onError(error);
                 }
@@ -80,8 +82,9 @@ class TikiBkupService {
       Function(Object)? onError,
       Function()? onSuccess}) async {
     RegExp pinCheck = RegExp(r'[0-9]{6,}$');
-    if (!pinCheck.hasMatch(newPin) && oldPin != newPin)
+    if (!pinCheck.hasMatch(newPin) && oldPin != newPin) {
       throw ArgumentError('new pin must be different and 6+ digits');
+    }
     return _auth(
         accessToken,
         onError,
@@ -102,14 +105,16 @@ class TikiBkupService {
     return request(accessToken, (error) async {
       if (error is TikiBkupErrorHttp && refresh != null) {
         await refresh!((token) async {
-          if (token != null)
+          if (token != null) {
             await request(
                 token,
                 (error) async =>
                     onError != null ? onError(error) : throw error);
+          }
         });
-      } else
+      } else {
         onError != null ? onError(error) : throw error;
+      }
     });
   }
 

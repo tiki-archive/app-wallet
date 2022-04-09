@@ -24,7 +24,7 @@ Future<CryptoAESKey> generate() => compute(_generate, "").then((key) => key);
 CryptoAESKey _generate(_) => CryptoAESKey(utils.secureRandom().nextBytes(32));
 
 Future<Uint8List> encrypt(Uint8List plaintext, CryptoAESKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['key'] = key.encode();
   q['plaintext'] = base64.encode(plaintext);
   return compute(_encrypt, q).then((ciphertext) => ciphertext);
@@ -54,7 +54,7 @@ Uint8List _encrypt(Map<String, String> q) {
 }
 
 Future<Uint8List> decrypt(Uint8List ciphertext, CryptoAESKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['key'] = key.encode();
   q['ciphertext'] = base64.encode(ciphertext);
   return compute(_decrypt, q).then((plaintext) => plaintext);
@@ -64,8 +64,9 @@ Uint8List _decrypt(Map<String, String> q) {
   Uint8List ciphertext = base64.decode(q['ciphertext']!);
   CryptoAESKey aes = CryptoAESKey.decode(q['key']!);
   if (aes.key!.length != 32) throw ArgumentError("key length must be 256-bits");
-  if (ciphertext.length < 16)
+  if (ciphertext.length < 16) {
     throw ArgumentError("cipher length must be > 128-bits");
+  }
 
   Uint8List iv = ciphertext.sublist(0, 16);
   Uint8List message = ciphertext.sublist(16);
@@ -85,8 +86,8 @@ Uint8List _decrypt(Map<String, String> q) {
 }
 
 Future<CryptoAESKey> derive(String passphrase, {Uint8List? salt}) {
-  if (salt == null) salt = utils.secureRandom().nextBytes(16);
-  Map<String, String> q = Map();
+  salt ??= utils.secureRandom().nextBytes(16);
+  Map<String, String> q = {};
   q['salt'] = base64.encode(salt);
   q['passphrase'] = passphrase;
   return compute(_derive, q).then((key) => key);

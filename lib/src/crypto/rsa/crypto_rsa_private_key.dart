@@ -22,32 +22,25 @@ class CryptoRSAPrivateKey extends RSAPrivateKey {
       : super(modulus, privateExponent, p, q);
 
   static CryptoRSAPrivateKey decode(String encodedKey) {
-    ASN1Parser topLevelParser = new ASN1Parser(base64.decode(encodedKey));
+    ASN1Parser topLevelParser = ASN1Parser(base64.decode(encodedKey));
     ASN1Sequence topLevelSeq = topLevelParser.nextObject() as ASN1Sequence;
 
-    ASN1Integer version = topLevelSeq.elements![0] as ASN1Integer;
-    ASN1Sequence algorithmSeq = topLevelSeq.elements![1] as ASN1Sequence;
     ASN1OctetString privateKeyOctet =
         topLevelSeq.elements![2] as ASN1OctetString;
 
     ASN1Sequence publicKeySeq =
         ASN1Sequence.fromBytes(privateKeyOctet.octets as Uint8List);
-    ASN1Integer privateKeyVersion = publicKeySeq.elements![0] as ASN1Integer;
     ASN1Integer modulus = publicKeySeq.elements![1] as ASN1Integer;
-    ASN1Integer publicExponent = publicKeySeq.elements![2] as ASN1Integer;
     ASN1Integer privateExponent = publicKeySeq.elements![3] as ASN1Integer;
     ASN1Integer prime1 = publicKeySeq.elements![4] as ASN1Integer;
     ASN1Integer prime2 = publicKeySeq.elements![5] as ASN1Integer;
-    ASN1Integer exponent1 = publicKeySeq.elements![6] as ASN1Integer;
-    ASN1Integer exponent2 = publicKeySeq.elements![7] as ASN1Integer;
-    ASN1Integer coefficient = publicKeySeq.elements![8] as ASN1Integer;
 
     return CryptoRSAPrivateKey(modulus.integer!, privateExponent.integer!,
         prime1.integer, prime2.integer);
   }
 
   CryptoRSAPublicKey get public =>
-      CryptoRSAPublicKey(this.modulus!, this.publicExponent!);
+      CryptoRSAPublicKey(modulus!, publicExponent!);
 
   String encode() {
     ASN1Sequence sequence = ASN1Sequence();
@@ -64,13 +57,13 @@ class CryptoRSAPrivateKey extends RSAPrivateKey {
     ASN1Integer modulus = ASN1Integer(this.modulus);
     ASN1Integer publicExponent = ASN1Integer(this.publicExponent);
     ASN1Integer privateExponent = ASN1Integer(this.privateExponent);
-    ASN1Integer prime1 = ASN1Integer(this.p);
-    ASN1Integer prime2 = ASN1Integer(this.q);
+    ASN1Integer prime1 = ASN1Integer(p);
+    ASN1Integer prime2 = ASN1Integer(q);
     ASN1Integer exponent1 =
-        ASN1Integer(this.privateExponent! % (this.p! - BigInt.from(1)));
+        ASN1Integer(this.privateExponent! % (p! - BigInt.from(1)));
     ASN1Integer exponent2 =
-        ASN1Integer(this.privateExponent! % (this.q! - BigInt.from(1)));
-    ASN1Integer coefficient = ASN1Integer(this.q!.modInverse(this.p!));
+        ASN1Integer(this.privateExponent! % (q! - BigInt.from(1)));
+    ASN1Integer coefficient = ASN1Integer(q!.modInverse(p!));
     privateKeySequence.add(privateKeyVersion);
     privateKeySequence.add(modulus);
     privateKeySequence.add(publicExponent);
