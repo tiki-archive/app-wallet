@@ -37,7 +37,7 @@ class TikiChainCacheRepository {
     return block;
   }
 
-  Future<void> drop() => _database.rawDelete('DELETE * FROM $_table');
+  Future<void> drop() => _database.delete(_table);
 
   Future<TikiChainCacheModel?> get(Uint8List hash, {Transaction? txn}) async {
     List<Map<String, Object?>> rows = await (txn ?? _database).query(_table,

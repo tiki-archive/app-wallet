@@ -5,9 +5,9 @@
 
 import 'package:httpp/httpp.dart';
 import 'package:logging/logging.dart';
-import 'package:wallet/src/tiki/api/tiki_api_model_rsp_message.dart';
 
 import '../api/tiki_api_model_rsp.dart';
+import '../api/tiki_api_model_rsp_message.dart';
 import 'tiki_bkup_error_http.dart';
 import 'tiki_bkup_error_lock.dart';
 import 'tiki_bkup_model_add_req.dart';
@@ -34,7 +34,7 @@ class TikiBkupRepository {
         verb: HttppVerb.POST,
         headers: HttppHeaders.typical(bearerToken: accessToken),
         body: HttppBody.fromJson(body?.toJson()),
-        timeout: Duration(seconds: 30),
+        timeout: const Duration(seconds: 30),
         onSuccess: (rsp) {
           if (onSuccess != null) onSuccess();
         },
@@ -60,7 +60,7 @@ class TikiBkupRepository {
         verb: HttppVerb.POST,
         headers: HttppHeaders.typical(bearerToken: accessToken),
         body: HttppBody.fromJson(body?.toJson()),
-        timeout: Duration(seconds: 30),
+        timeout: const Duration(seconds: 30),
         onSuccess: (rsp) {
           if (onSuccess != null) onSuccess();
         },
@@ -86,7 +86,7 @@ class TikiBkupRepository {
         verb: HttppVerb.POST,
         headers: HttppHeaders.typical(bearerToken: accessToken),
         body: HttppBody.fromJson(body?.toJson()),
-        timeout: Duration(seconds: 30),
+        timeout: const Duration(seconds: 30),
         onSuccess: (rsp) {
           if (onSuccess != null) {
             TikiApiModelRsp<TikiBkupModelFindRsp> body =
@@ -102,13 +102,15 @@ class TikiBkupRepository {
           if (body.code == 403) {
             Iterable<TikiApiModelRspMessage>? lockMsgs = body.messages
                 ?.where((e) => e.properties?.containsKey('LockCode') ?? false);
-            if (lockMsgs != null && lockMsgs.length > 0)
+            if (lockMsgs != null && lockMsgs.isNotEmpty) {
               error =
                   TikiBkupErrorLock(lockMsgs.first.properties!['LockCode']!);
-            else
+            } else {
               error = TikiBkupErrorHttp(body);
-          } else
+            }
+          } else {
             error = TikiBkupErrorHttp(body);
+          }
           onError == null ? throw error : onError(error);
         },
         onError: onError);

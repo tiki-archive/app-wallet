@@ -11,8 +11,8 @@ class TikiBkupModelFindReq {
 
   TikiBkupModelFindReq.fromJson(Map<String, dynamic>? json) {
     if (json != null) {
-      this.email = json['email'];
-      this.pin = json['pin'];
+      email = json['email'];
+      pin = json['pin'];
     }
   }
 

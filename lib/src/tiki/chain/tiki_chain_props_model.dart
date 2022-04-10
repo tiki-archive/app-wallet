@@ -13,9 +13,10 @@ class TikiChainPropsModel {
 
   TikiChainPropsModel.fromMap(Map<String, dynamic>? map) {
     if (map != null) {
-      if (map['key'] != null)
-        this.key = TikiChainPropsKey.fromString(map['key']);
-      this.value = map['value'];
+      if (map['key'] != null) {
+        key = TikiChainPropsKey.fromString(map['key']);
+      }
+      value = map['value'];
     }
   }
 

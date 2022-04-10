@@ -6,8 +6,9 @@
 import 'package:logging/logging.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_props_key.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_props_model.dart';
+
+import 'tiki_chain_props_key.dart';
+import 'tiki_chain_props_model.dart';
 
 class TikiChainPropsRepository {
   static const String _table = 'localchain_props';

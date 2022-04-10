@@ -40,7 +40,7 @@ AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> _generate(_) {
 }
 
 Future<Uint8List> encrypt(Uint8List plaintext, CryptoRSAPublicKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['plaintext'] = base64.encode(plaintext);
   q['key'] = key.encode();
   return compute(_encrypt, q).then((ciphertext) => ciphertext);
@@ -55,7 +55,7 @@ Uint8List _encrypt(Map<String, String> q) {
 }
 
 Future<Uint8List> decrypt(Uint8List ciphertext, CryptoRSAPrivateKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['ciphertext'] = base64.encode(ciphertext);
   q['key'] = key.encode();
   return compute(_decrypt, q).then((plaintext) => plaintext);
@@ -70,7 +70,7 @@ Uint8List _decrypt(Map<String, String> q) {
 }
 
 Future<Uint8List> sign(Uint8List message, CryptoRSAPrivateKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['message'] = base64.encode(message);
   q['key'] = key.encode();
   return compute(_sign, q).then((signature) => signature);
@@ -87,7 +87,7 @@ Uint8List _sign(Map<String, String> q) {
 
 Future<bool> verify(
     Uint8List message, Uint8List signature, CryptoRSAPublicKey key) {
-  Map<String, String> q = Map();
+  Map<String, String> q = {};
   q['message'] = base64.encode(message);
   q['signature'] = base64.encode(signature);
   q['key'] = key.encode();

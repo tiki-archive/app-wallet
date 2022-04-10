@@ -16,7 +16,7 @@ class CryptoECPublicKey extends ECPublicKey {
       : super(Q, parameters);
 
   static CryptoECPublicKey decode(String encodedKey) {
-    ASN1Parser topLevelParser = new ASN1Parser(base64.decode(encodedKey));
+    ASN1Parser topLevelParser = ASN1Parser(base64.decode(encodedKey));
     ASN1Sequence topLevelSeq = topLevelParser.nextObject() as ASN1Sequence;
 
     ASN1Sequence algorithmSeq = topLevelSeq.elements![0] as ASN1Sequence;
@@ -38,7 +38,7 @@ class CryptoECPublicKey extends ECPublicKey {
     algorithm.add(ASN1ObjectIdentifier.fromName('ecPublicKey'));
     algorithm.add(ASN1ObjectIdentifier.fromName('prime256v1'));
     ASN1BitString publicKeyBitString = ASN1BitString();
-    publicKeyBitString.stringValues = this.Q!.getEncoded(false);
+    publicKeyBitString.stringValues = Q!.getEncoded(false);
     sequence.add(algorithm);
     sequence.add(publicKeyBitString);
     sequence.encode();

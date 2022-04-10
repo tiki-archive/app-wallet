@@ -20,13 +20,13 @@ class TikiChainCacheModel {
 
   TikiChainCacheModel.fromMap(Map<String, dynamic>? map) {
     if (map != null) {
-      this.hash = map['hash'];
-      this.contents = map['contents'];
-      this.previousHash = map['previous_hash'];
-      this.schema = BlockContentsSchema.fromCode(map['block_schema']);
-      if (map['created_epoch'] != null)
-        this.created =
-            DateTime.fromMillisecondsSinceEpoch(map['created_epoch']);
+      hash = map['hash'];
+      contents = map['contents'];
+      previousHash = map['previous_hash'];
+      schema = BlockContentsSchema.fromCode(map['block_schema']);
+      if (map['created_epoch'] != null) {
+        created = DateTime.fromMillisecondsSinceEpoch(map['created_epoch']);
+      }
     }
   }
 
