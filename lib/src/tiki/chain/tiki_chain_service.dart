@@ -6,13 +6,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:httpp/httpp.dart';
 import 'package:localchain/localchain.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:syncchain/syncchain.dart';
+import 'package:tiki_kv/tiki_kv.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/crypto_utils.dart';
+import '../../crypto/rsa/crypto_rsa.dart' as rsa;
 import '../keys/tiki_keys_model.dart';
 import 'tiki_chain_cache_block.dart';
 import 'tiki_chain_cache_model.dart';
@@ -27,10 +31,17 @@ class TikiChainService {
   late final Localchain _localchain;
   late final TikiChainCacheRepository _cacheRepository;
   late final TikiChainPropsRepository _propsRepository;
+  late final SyncChain _syncChain;
 
   TikiChainService(this._keys);
 
-  Future<TikiChainService> open(Database database) async {
+  Future<TikiChainService> open(
+      {required Database database,
+      Httpp? httpp,
+      TikiKv? kv,
+      String? accessToken,
+      Future<void> Function(void Function(String?)? onSuccess)?
+          refresh}) async {
     if (!database.isOpen) {
       throw ArgumentError.value(database, 'database', 'database is not open');
     }
@@ -41,6 +52,17 @@ class TikiChainService {
     await _propsRepository.createTable();
     _localchain = await Localchain().open(_keys.address);
 
+    _syncChain = await SyncChain(
+            httpp: httpp,
+            kv: kv,
+            database: database,
+            refresh: refresh,
+            sign: (textToSign) => rsa.sign(textToSign, _keys.sign.privateKey))
+        .init(
+            address: _keys.address,
+            accessToken: accessToken,
+            publicKey: _keys.sign.publicKey.encode());
+
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
     if (cachedOn == null) build();
@@ -48,7 +70,8 @@ class TikiChainService {
   }
 
   //note: think about if we need a special case for writes when cache is still building.
-  Future<TikiChainCacheBlock> write(BlockContents contents) async {
+  Future<TikiChainCacheBlock> write(BlockContents contents,
+      {String? accessToken}) async {
     Uint8List ciphertext = await _encrypt(contents);
     Block block = await _localchain.append(ciphertext);
     Uint8List plaintextContents = Localchain.codec.encode(contents);
@@ -59,6 +82,15 @@ class TikiChainService {
         contents: plaintextContents,
         created: block.created,
         schema: contents.schema));
+
+    _syncChain.syncBlock(
+        accessToken: accessToken,
+        hash: hash,
+        block: SyncChainBlock(
+            contents: block.contents,
+            created: block.created,
+            previous: block.previousHash));
+
     return TikiChainCacheBlock(
         hash: hash,
         cipherContents: block.contents,
@@ -67,11 +99,15 @@ class TikiChainService {
         created: block.created);
   }
 
-  Future<TikiChainCacheBlock> mint(Uint8List bytes) async {
+  Future<TikiChainCacheBlock> mint(Uint8List bytes,
+      {String? accessToken}) async {
     Uint8List proof = secureRandom().nextBytes(32);
     Uint8List fingerprint = sha256(proof, sha3: true);
-    return write(BlockContentsDataNft(
-        fingerprint: base64.encode(fingerprint), proof: base64.encode(proof)));
+    return write(
+        BlockContentsDataNft(
+            fingerprint: base64.encode(fingerprint),
+            proof: base64.encode(proof)),
+        accessToken: accessToken);
   }
 
   Future<TikiChainCacheBlock?> read(Uint8List hash) async {

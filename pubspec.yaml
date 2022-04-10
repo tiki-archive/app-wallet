@@ -21,9 +21,19 @@ dependencies:
   httpp:
     git:
       url: https://github.com/tiki/httpp
+      ref: 0.0.3
   localchain:
     git:
       url: https://github.com/tiki/localchain
+      ref: 0.0.2
+  tiki_kv:
+    git:
+      url: https://github.com/tiki/tiki_kv
+      ref: 0.1.0
+  syncchain:
+    git:
+      url: https://github.com/tiki/syncchain
+      ref: 0.0.1
 
 dependency_overrides:
   sqflite:
