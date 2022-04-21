@@ -50,7 +50,7 @@ class TikiChainService {
     await _propsRepository.createTable();
     _localchain = await Localchain().open(_keys.address);
 
-    /*_syncChain = await SyncChain(
+    _syncChain = await SyncChain(
             httpp: httpp,
             kv: kv,
             database: database,
@@ -59,7 +59,7 @@ class TikiChainService {
         .init(
             address: _keys.address,
             accessToken: accessToken,
-            publicKey: _keys.sign.publicKey.encode());*/
+            publicKey: _keys.sign.publicKey.encode());
 
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
@@ -101,13 +101,13 @@ class TikiChainService {
         BlockContents contents = reqs[entry.key]!;
         Uint8List hash = _hash(block);
 
-        /*_syncChain.syncBlock(
+        _syncChain.syncBlock(
             accessToken: accessToken,
             hash: hash,
             block: SyncChainBlock(
                 contents: block.contents,
                 created: block.created,
-                previous: block.previousHash));*/
+                previous: block.previousHash));
 
         toCache.add(TikiChainCacheModel(
             hash: hash,
