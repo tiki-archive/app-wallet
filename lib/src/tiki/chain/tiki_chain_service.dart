@@ -16,6 +16,7 @@ import 'package:tiki_kv/tiki_kv.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/crypto_utils.dart';
+import '../../crypto/rsa/crypto_rsa.dart' as rsa;
 import '../keys/tiki_keys_model.dart';
 import 'tiki_chain_cache_model.dart';
 import 'tiki_chain_cache_repository.dart';
