@@ -23,14 +23,23 @@ Future<CryptoAESKey> generate() => compute(_generate, "").then((key) => key);
 
 CryptoAESKey _generate(_) => CryptoAESKey(utils.secureRandom().nextBytes(32));
 
+Future<MapEntry<String, Uint8List>> encryptWithId(
+    String id, Uint8List plaintext, CryptoAESKey key) {
+  Map<String, String> q = {};
+  q['key'] = key.encode();
+  q['plaintext'] = base64.encode(plaintext);
+  q['id'] = id;
+  return compute(_encrypt, q).then((payload) => payload);
+}
+
 Future<Uint8List> encrypt(Uint8List plaintext, CryptoAESKey key) {
   Map<String, String> q = {};
   q['key'] = key.encode();
   q['plaintext'] = base64.encode(plaintext);
-  return compute(_encrypt, q).then((ciphertext) => ciphertext);
+  return compute(_encrypt, q).then((rsp) => rsp.value);
 }
 
-Uint8List _encrypt(Map<String, String> q) {
+MapEntry<String, Uint8List> _encrypt(Map<String, String> q) {
   Uint8List plaintext = base64.decode(q['plaintext']!);
   CryptoAESKey aes = CryptoAESKey.decode(q['key']!);
   if (aes.key!.length != 32) throw ArgumentError("key length must be 256-bits");
@@ -50,7 +59,7 @@ Uint8List _encrypt(Map<String, String> q) {
   BytesBuilder cipherBuilder = BytesBuilder();
   cipherBuilder.add(iv);
   cipherBuilder.add(cipher.process(utils.addPadding(plaintext, 16, pad: 0)));
-  return cipherBuilder.toBytes();
+  return MapEntry(q['id'] ?? '_', cipherBuilder.toBytes());
 }
 
 Future<Uint8List> decrypt(Uint8List ciphertext, CryptoAESKey key) {

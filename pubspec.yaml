@@ -25,7 +25,7 @@ dependencies:
   localchain:
     git:
       url: https://github.com/tiki/localchain
-      ref: 0.0.2
+      ref: 0.0.3
   tiki_kv:
     git:
       url: https://github.com/tiki/tiki_kv
