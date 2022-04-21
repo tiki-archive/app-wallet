@@ -37,6 +37,13 @@ class TikiChainCacheRepository {
     return block;
   }
 
+  Future<void> insertAll(List<TikiChainCacheModel> blocks,
+      {Transaction? txn}) async {
+    Batch batch = (txn ?? _database).batch();
+    blocks.forEach((block) => batch.insert(_table, block.toMap()));
+    await batch.commit(noResult: true);
+  }
+
   Future<void> drop() => _database.delete(_table);
 
   Future<TikiChainCacheModel?> get(Uint8List hash, {Transaction? txn}) async {
