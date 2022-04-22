@@ -69,9 +69,11 @@ class TikiChainService {
   }
 
   //note: think about if we need a special case for writes when cache is still building.
-  Future<Map<String, Uint8List>> write(Map<String, BlockContents> reqs,
-      {String? accessToken, int pageSize = 100}) async {
-    Map<String, Uint8List> rsp = {};
+  Future<Map<String, TikiChainCacheModel>> write(
+      Map<String, BlockContents> reqs,
+      {String? accessToken,
+      int pageSize = 100}) async {
+    Map<String, TikiChainCacheModel> rsp = {};
     int numPages = (reqs.length / pageSize).ceil();
 
     for (int i = 0; i < numPages; i++) {
@@ -110,14 +112,15 @@ class TikiChainService {
                 created: block.created,
                 previous: block.previousHash));
 
-        toCache.add(TikiChainCacheModel(
+        TikiChainCacheModel cacheBlock = TikiChainCacheModel(
             hash: hash,
             previousHash: block.previousHash,
             contents: contents.payload,
             created: block.created,
-            schema: contents.schema));
+            schema: contents.schema);
 
-        rsp[entry.key] = hash;
+        toCache.add(cacheBlock);
+        rsp[entry.key] = cacheBlock;
       });
 
       await _cacheRepository.insertAll(toCache);
@@ -125,7 +128,7 @@ class TikiChainService {
     return rsp;
   }
 
-  Future<Map<String, Uint8List>> mint(Map<String, Uint8List> reqs,
+  Future<Map<String, TikiChainCacheModel>> mint(Map<String, Uint8List> reqs,
       {String? accessToken, int pageSize = 100}) async {
     Map<String, BlockContentsDataNft> writeReq = reqs.map((key, value) {
       Uint8List proof = secureRandom().nextBytes(32);
