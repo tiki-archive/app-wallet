@@ -17,6 +17,7 @@ import 'package:pointycastle/paddings/pkcs7.dart';
 import '../crypto_utils.dart' as utils;
 import 'crypto_aes_key.dart';
 
+// ignore: constant_identifier_names
 const int _PBKDF2_ITERATIONS = 200000;
 
 Future<CryptoAESKey> generate() => compute(_generate, "").then((key) => key);

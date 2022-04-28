@@ -40,7 +40,9 @@ class TikiChainCacheRepository {
   Future<void> insertAll(List<TikiChainCacheModel> blocks,
       {Transaction? txn}) async {
     Batch batch = (txn ?? _database).batch();
-    blocks.forEach((block) => batch.insert(_table, block.toMap()));
+    for (var block in blocks) {
+      batch.insert(_table, block.toMap());
+    }
     await batch.commit(noResult: true);
   }
 

@@ -6,7 +6,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:localchain/localchain.dart';
+import 'package:tiki_localchain/tiki_localchain.dart';
 
 class TikiChainCacheModel {
   Uint8List? hash;

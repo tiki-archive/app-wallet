@@ -7,13 +7,13 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pointycastle/api.dart';
-import 'package:wallet/src/crypto/aes/crypto_aes.dart' as aes;
-import 'package:wallet/src/crypto/aes/crypto_aes_key.dart';
-import 'package:wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
-import 'package:wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
-import 'package:wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_model.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
+import 'package:tiki_wallet/src/crypto/aes/crypto_aes.dart' as aes;
+import 'package:tiki_wallet/src/crypto/aes/crypto_aes_key.dart';
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
+import 'package:tiki_wallet/src/tiki/keys/tiki_keys_model.dart';
+import 'package:tiki_wallet/src/tiki/keys/tiki_keys_service.dart';
 
 void main() {
   group('tiki-keys-model unit tests', () {

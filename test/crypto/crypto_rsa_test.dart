@@ -8,9 +8,9 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pointycastle/api.dart';
-import 'package:wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
-import 'package:wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
-import 'package:wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa.dart' as rsa;
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa_private_key.dart';
+import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
 
 void main() {
   group('crypto-rsa unit tests', () {

@@ -7,9 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:uuid/uuid.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_props_key.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_props_model.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_props_repository.dart';
+import 'package:tiki_wallet/src/tiki/chain/tiki_chain_props_key.dart';
+import 'package:tiki_wallet/src/tiki/chain/tiki_chain_props_model.dart';
+import 'package:tiki_wallet/src/tiki/chain/tiki_chain_props_repository.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
