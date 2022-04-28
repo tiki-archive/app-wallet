@@ -8,9 +8,9 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pointycastle/api.dart';
-import 'package:wallet/src/crypto/ec/crypto_ec.dart' as ec;
-import 'package:wallet/src/crypto/ec/crypto_ec_private_key.dart';
-import 'package:wallet/src/crypto/ec/crypto_ec_public_key.dart';
+import 'package:tiki_wallet/src/crypto/ec/crypto_ec.dart' as ec;
+import 'package:tiki_wallet/src/crypto/ec/crypto_ec_private_key.dart';
+import 'package:tiki_wallet/src/crypto/ec/crypto_ec_public_key.dart';
 
 void main() {
   group('crypto-ec unit tests', () {

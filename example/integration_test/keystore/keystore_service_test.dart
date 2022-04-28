@@ -6,8 +6,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:uuid/uuid.dart';
-import 'package:wallet/src/keystore/keystore_model.dart';
-import 'package:wallet/src/keystore/keystore_service.dart';
+import 'package:tiki_wallet/src/keystore/keystore_model.dart';
+import 'package:tiki_wallet/src/keystore/keystore_service.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
