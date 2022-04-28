@@ -8,11 +8,11 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:localchain/localchain.dart';
+import 'package:tiki_localchain/tiki_localchain.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:uuid/uuid.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_cache_model.dart';
-import 'package:wallet/src/tiki/chain/tiki_chain_cache_repository.dart';
+import 'package:tiki_wallet/src/tiki/chain/tiki_chain_cache_model.dart';
+import 'package:tiki_wallet/src/tiki/chain/tiki_chain_cache_repository.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

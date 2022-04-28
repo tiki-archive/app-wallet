@@ -1,10 +1,9 @@
-name: wallet
+name: tiki_wallet
 description: flutter lib for managing crypto keys
 version: 0.0.12
 homepage: https://mytiki.com
 repository: https://github.com/tiki/wallet
 issue_tracker: https://github.com/tiki/wallet/issues
-publish_to: none # package in active development
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -18,29 +17,10 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   sqflite_sqlcipher: ^2.1.0
   collection: ^1.15.0 # flutter test depends on 1.15.0
-  httpp:
-    git:
-      url: https://github.com/tiki/httpp
-      ref: 0.0.3
-  localchain:
-    git:
-      url: https://github.com/tiki/localchain
-      ref: 0.0.3
-  tiki_kv:
-    git:
-      url: https://github.com/tiki/tiki_kv
-      ref: 0.1.0
-  syncchain:
-    git:
-      url: https://github.com/tiki/syncchain
-      ref: 0.0.1
-
-dependency_overrides:
-  sqflite:
-    git:
-      url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
-      path: sqflite
-      ref: fmdb_override
+  httpp: ^0.0.4
+  tiki_localchain: ^0.0.4
+  tiki_kv: ^0.1.1
+  tiki_syncchain: ^0.0.2
 
 dev_dependencies:
   flutter_test:

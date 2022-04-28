@@ -6,10 +6,10 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:wallet/src/keystore/keystore_model.dart';
-import 'package:wallet/src/keystore/keystore_service.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_model.dart';
-import 'package:wallet/src/tiki/keys/tiki_keys_service.dart';
+import 'package:tiki_wallet/src/keystore/keystore_model.dart';
+import 'package:tiki_wallet/src/keystore/keystore_service.dart';
+import 'package:tiki_wallet/src/tiki/keys/tiki_keys_model.dart';
+import 'package:tiki_wallet/src/tiki/keys/tiki_keys_service.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ void main() {
       TikiKeysService service = TikiKeysService(secureStorage: secureStorage);
       TikiKeysModel tikiKeysModel = await service.generate();
 
-      String k = tikiKeysModel.sign.publicKey.encode();
+      tikiKeysModel.sign.publicKey.encode();
 
       KeystoreService keystoreService =
           KeystoreService(secureStorage: secureStorage);
