@@ -1,3 +1,7 @@
+## 0.0.16
+
+* bumped syncchain version
+
 ## 0.0.15
 
 * fixed naming bug w/ syncchain block
