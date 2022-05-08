@@ -13,6 +13,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:tiki_kv/tiki_kv.dart';
 import 'package:tiki_localchain/tiki_localchain.dart';
 import 'package:tiki_syncchain/tiki_syncchain.dart';
+import 'package:tiki_syncchain/tiki_syncchain_block.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/crypto_utils.dart';
@@ -107,7 +108,7 @@ class TikiChainService {
         _syncChain.syncBlock(
             accessToken: accessToken,
             hash: hash,
-            block: SyncChainBlock(
+            block: TikiSyncChainBlock(
                 contents: block.contents,
                 created: block.created,
                 previous: block.previousHash));
