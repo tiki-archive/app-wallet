@@ -7,12 +7,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:httpp/httpp.dart';
-import 'package:localchain/localchain.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
-import 'package:syncchain/syncchain.dart';
 import 'package:tiki_kv/tiki_kv.dart';
+import 'package:tiki_localchain/tiki_localchain.dart';
+import 'package:tiki_syncchain/tiki_syncchain.dart';
+import 'package:tiki_syncchain/tiki_syncchain_block.dart';
 
 import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/crypto_utils.dart';
@@ -27,10 +28,10 @@ import 'tiki_chain_props_repository.dart';
 class TikiChainService {
   final _log = Logger('TikiChainService');
   final TikiKeysModel _keys;
-  late final Localchain _localchain;
+  late final TikiLocalchain _localchain;
   late final TikiChainCacheRepository _cacheRepository;
   late final TikiChainPropsRepository _propsRepository;
-  late final SyncChain _syncChain;
+  late final TikiSyncChain _syncChain;
 
   TikiChainService(this._keys);
 
@@ -49,9 +50,9 @@ class TikiChainService {
     _propsRepository = TikiChainPropsRepository(database);
     await _cacheRepository.createTable();
     await _propsRepository.createTable();
-    _localchain = await Localchain().open(_keys.address);
+    _localchain = await TikiLocalchain().open(_keys.address);
 
-    _syncChain = await SyncChain(
+    _syncChain = await TikiSyncChain(
             httpp: httpp,
             kv: kv,
             database: database,
@@ -91,15 +92,15 @@ class TikiChainService {
           Map.fromEntries(await Future.wait(encrypting));
 
       Map<String, Block> blockMap = {};
-      (await _localchain.append(List.of(encrypted.values))).forEach((block) {
+      for (var block in (await _localchain.append(List.of(encrypted.values)))) {
         if (block.contents != null) {
           String id = base64.encode(block.contents!);
           blockMap[id] = block;
         }
-      });
+      }
 
       List<TikiChainCacheModel> toCache = List.empty(growable: true);
-      encrypted.entries.forEach((entry) {
+      for (var entry in encrypted.entries) {
         Block block = blockMap[base64.encode(entry.value)]!;
         BlockContents contents = reqs[entry.key]!;
         Uint8List hash = _hash(block);
@@ -107,7 +108,7 @@ class TikiChainService {
         _syncChain.syncBlock(
             accessToken: accessToken,
             hash: hash,
-            block: SyncChainBlock(
+            block: TikiSyncChainBlock(
                 contents: block.contents,
                 created: block.created,
                 previous: block.previousHash));
@@ -121,7 +122,7 @@ class TikiChainService {
 
         toCache.add(cacheBlock);
         rsp[entry.key] = cacheBlock;
-      });
+      }
 
       await _cacheRepository.insertAll(toCache);
     }
@@ -175,12 +176,12 @@ class TikiChainService {
 
   Future<BlockContents> _decrypt(Uint8List ciphertext) async {
     Uint8List plaintext = await aes.decrypt(ciphertext, _keys.data);
-    return Localchain.codec.decode(plaintext);
+    return TikiLocalchain.codec.decode(plaintext);
   }
 
   Future<MapEntry<String, Uint8List>> _encrypt(
           String id, BlockContents contents) =>
-      aes.encryptWithId(id, Localchain.codec.encode(contents), _keys.data);
+      aes.encryptWithId(id, TikiLocalchain.codec.encode(contents), _keys.data);
 
   // From pointycastle/src/utils
   Uint8List _encodeBigInt(BigInt? number) {
