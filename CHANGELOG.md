@@ -1,3 +1,7 @@
+## 0.0.15
+
+* fixed naming bug w/ syncchain block
+
 ## 0.0.14
 
 * bump tiki_localchain to 0.0.5
