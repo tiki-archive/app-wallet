@@ -18,6 +18,10 @@ void main() {
       rsa.generate();
     });
 
+    test('generateAsync_success', () async {
+      await rsa.generateAsync();
+    });
+
     test('encode_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           rsa.generate();
@@ -65,7 +69,42 @@ void main() {
       expect(cipherTextString.isNotEmpty, true);
     });
 
+    test('encryptAsync_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      Uint8List cipherText = await rsa.encryptAsync(
+          keyPair.publicKey, Uint8List.fromList(utf8.encode("hello world")));
+      String cipherTextString = String.fromCharCodes(cipherText);
+
+      expect(cipherText.isNotEmpty, true);
+      expect(cipherTextString.isNotEmpty, true);
+    });
+
+    test('encryptBulk_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      Map<String, Uint8List> req = {
+        '1': Uint8List.fromList(utf8.encode('hello')),
+        '2': Uint8List.fromList(utf8.encode('world'))
+      };
+      Map<String, Uint8List> rsp =
+          await rsa.encryptBulk(keyPair.publicKey, req);
+
+      expect(utf8.decode(rsa.decrypt(keyPair.privateKey, rsp['1']!)), 'hello');
+      expect(utf8.decode(rsa.decrypt(keyPair.privateKey, rsp['2']!)), 'world');
+    });
+
     test('decrypt_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      String plainText = "hello world";
+      Uint8List cipherText = rsa.encrypt(
+          keyPair.publicKey, Uint8List.fromList(utf8.encode(plainText)));
+      String result = utf8.decode(rsa.decrypt(keyPair.privateKey, cipherText));
+      expect(result, plainText);
+    });
+
+    test('decryptAsync_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           rsa.generate();
       String plainText = "hello world";
@@ -85,6 +124,26 @@ void main() {
       expect(signature.isNotEmpty, true);
     });
 
+    test('signAsync_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      String message = "hello world";
+      Uint8List signature = await rsa.signAsync(
+          keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      expect(signature.isNotEmpty, true);
+    });
+
+    test('signBulk_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      Map<String, Uint8List> req = {
+        '1': Uint8List.fromList(utf8.encode('hello')),
+        '2': Uint8List.fromList(utf8.encode('world'))
+      };
+      Map<String, Uint8List> rsp = await rsa.signBulk(keyPair.privateKey, req);
+      expect(rsp.length, 2);
+    });
+
     test('verify_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
           rsa.generate();
@@ -94,6 +153,34 @@ void main() {
       bool verify = rsa.verify(keyPair.publicKey,
           Uint8List.fromList(utf8.encode(message)), signature);
       expect(verify, true);
+    });
+
+    test('verifyAsync_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      String message = "hello world";
+      Uint8List signature = rsa.sign(
+          keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      bool verify = await rsa.verifyAsync(keyPair.publicKey,
+          Uint8List.fromList(utf8.encode(message)), signature);
+      expect(verify, true);
+    });
+
+    test('verifyAll_success', () async {
+      AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
+          rsa.generate();
+      Map<String, Uint8List> signReq = {
+        '1': Uint8List.fromList(utf8.encode('hello')),
+        '2': Uint8List.fromList(utf8.encode('world'))
+      };
+      Map<String, Uint8List> signRsp =
+          await rsa.signBulk(keyPair.privateKey, signReq);
+      Map<Uint8List, Uint8List> verifyReq = {
+        signReq['1']!: signRsp['1']!,
+        signReq['2']!: signRsp['2']!
+      };
+      bool pass = await rsa.verifyAll(keyPair.publicKey, verifyReq);
+      expect(pass, true);
     });
   });
 }

@@ -83,7 +83,7 @@ class TikiKeysService {
       String passphrase, Uint8List ciphertext) async {
     try {
       Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
-      CryptoAESKey key = aes.derive(passphrase, salt: salt);
+      CryptoAESKey key = await aes.deriveAsync(passphrase, salt: salt);
       String plaintext = utf8
           .decode(await aes.decryptAsync(key, ciphertext.sublist(_SALT_LEN)));
       List<String> encodedKeys = plaintext.split(_DELIMITER);
@@ -103,7 +103,7 @@ class TikiKeysService {
 
   Future<Uint8List> encrypt(String passphrase, TikiKeysModel keys) async {
     Uint8List salt = cryptoutils.secureRandom().nextBytes(_SALT_LEN);
-    CryptoAESKey key = aes.derive(passphrase, salt: salt);
+    CryptoAESKey key = await aes.deriveAsync(passphrase, salt: salt);
     String plaintext = keys.address +
         _DELIMITER +
         keys.sign.privateKey.encode() +

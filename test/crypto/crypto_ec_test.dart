@@ -18,6 +18,10 @@ void main() {
       ec.generate();
     });
 
+    test('generateAsync_success', () async {
+      await ec.generateAsync();
+    });
+
     test('encode_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
           ec.generate();
@@ -60,6 +64,26 @@ void main() {
       expect(signature.isNotEmpty, true);
     });
 
+    test('signAsync_success', () async {
+      AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
+          ec.generate();
+      String message = "hello world";
+      Uint8List signature = await ec.signAsync(
+          keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      expect(signature.isNotEmpty, true);
+    });
+
+    test('signBulk_success', () async {
+      AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
+          ec.generate();
+      Map<String, Uint8List> req = {
+        '1': Uint8List.fromList(utf8.encode('hello')),
+        '2': Uint8List.fromList(utf8.encode('world'))
+      };
+      Map<String, Uint8List> rsp = await ec.signBulk(keyPair.privateKey, req);
+      expect(rsp.length, 2);
+    });
+
     test('verify_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
           ec.generate();
@@ -69,6 +93,34 @@ void main() {
       bool verify = ec.verify(keyPair.publicKey,
           Uint8List.fromList(utf8.encode(message)), signature);
       expect(verify, true);
+    });
+
+    test('verifyAsync_success', () async {
+      AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
+          ec.generate();
+      String message = "hello world";
+      Uint8List signature =
+          ec.sign(keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      bool verify = await ec.verifyAsync(keyPair.publicKey,
+          Uint8List.fromList(utf8.encode(message)), signature);
+      expect(verify, true);
+    });
+
+    test('verifyAll_success', () async {
+      AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
+          ec.generate();
+      Map<String, Uint8List> signReq = {
+        '1': Uint8List.fromList(utf8.encode('hello')),
+        '2': Uint8List.fromList(utf8.encode('world'))
+      };
+      Map<String, Uint8List> signRsp =
+          await ec.signBulk(keyPair.privateKey, signReq);
+      Map<Uint8List, Uint8List> verifyReq = {
+        signReq['1']!: signRsp['1']!,
+        signReq['2']!: signRsp['2']!
+      };
+      bool pass = await ec.verifyAll(keyPair.publicKey, verifyReq);
+      expect(pass, true);
     });
   });
 }

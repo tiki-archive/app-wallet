@@ -52,16 +52,17 @@ class TikiChainService {
     await _propsRepository.createTable();
     _localchain = await TikiLocalchain().open(_keys.address);
 
+    //todo fix the sign future in sync
     _syncChain = await TikiSyncChain(
-            httpp: httpp,
-            kv: kv,
-            database: database,
-            refresh: refresh,
-            sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
-        .init(
-            address: _keys.address,
-            accessToken: accessToken,
-            publicKey: _keys.sign.publicKey.encode());
+        httpp: httpp,
+        kv: kv,
+        database: database,
+        refresh: refresh,
+        sign: (textToSign) =>
+            Future.value(rsa.sign(_keys.sign.privateKey, textToSign))).init(
+        address: _keys.address,
+        accessToken: accessToken,
+        publicKey: _keys.sign.publicKey.encode());
 
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
@@ -117,7 +118,7 @@ class TikiChainService {
   }
 
   Future<Map<String, TikiChainCacheModel>> mint(Map<String, Uint8List> reqs,
-      {String? accessToken, int pageSize = 100}) async {
+      {String? accessToken}) async {
     Map<String, BlockContentsDataNft> writeReq = reqs.map((key, value) {
       Uint8List proof = secureRandom().nextBytes(32);
       BytesBuilder builder = BytesBuilder();
@@ -130,7 +131,7 @@ class TikiChainService {
               fingerprint: base64.encode(fingerprint),
               proof: base64.encode(proof)));
     });
-    return write(writeReq, accessToken: accessToken, pageSize: pageSize);
+    return write(writeReq, accessToken: accessToken);
   }
 
   Future<TikiChainCacheModel?> read(Uint8List hash) =>
