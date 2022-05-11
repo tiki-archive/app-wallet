@@ -1,3 +1,8 @@
+## 0.0.17
+
+* added sync func for crypto
+* added bulk func for crypto
+
 ## 0.0.16
 
 * bumped syncchain version
