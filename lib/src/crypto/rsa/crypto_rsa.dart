@@ -20,10 +20,7 @@ import '../crypto_utils.dart' as utils;
 import 'crypto_rsa_private_key.dart';
 import 'crypto_rsa_public_key.dart';
 
-Future<AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey>> generate() =>
-    compute(_generate, "").then((keyPair) => keyPair);
-
-AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> _generate(_) {
+AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> generate() {
   final keyGen = RSAKeyGenerator()
     ..init(ParametersWithRandom(
         RSAKeyGeneratorParameters(BigInt.parse('65537'), 2048, 64),
@@ -39,65 +36,93 @@ AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> _generate(_) {
           privateKey.p, privateKey.q));
 }
 
-Future<Uint8List> encrypt(Uint8List plaintext, CryptoRSAPublicKey key) {
-  Map<String, String> q = {};
-  q['plaintext'] = base64.encode(plaintext);
-  q['key'] = key.encode();
-  return compute(_encrypt, q).then((ciphertext) => ciphertext);
-}
+Future<AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey>>
+    generateAsync() =>
+        compute((_) => generate(), "").then((keyPair) => keyPair);
 
-Uint8List _encrypt(Map<String, String> q) {
-  Uint8List plaintext = base64.decode(q['plaintext']!);
-  CryptoRSAPublicKey key = CryptoRSAPublicKey.decode(q['key']!);
+Uint8List encrypt(CryptoRSAPublicKey key, Uint8List plaintext) {
   final encryptor = OAEPEncoding(RSAEngine())
     ..init(true, PublicKeyParameter<RSAPublicKey>(key));
   return utils.processInBlocks(encryptor, plaintext);
 }
 
-Future<Uint8List> decrypt(Uint8List ciphertext, CryptoRSAPrivateKey key) {
-  Map<String, String> q = {};
-  q['ciphertext'] = base64.encode(ciphertext);
-  q['key'] = key.encode();
-  return compute(_decrypt, q).then((plaintext) => plaintext);
+Future<Map<String, Uint8List>> encryptBulk(
+    CryptoRSAPublicKey key, Map<String, Uint8List> req) {
+  Map<String, String> q =
+      req.map((key, value) => MapEntry(key, base64.encode(value)));
+  q['CRYPTORSAPUBLICKEY'] = key.encode();
+  return compute((Map<String, String> q) {
+    CryptoRSAPublicKey aes =
+        CryptoRSAPublicKey.decode(q.remove('CRYPTORSAPUBLICKEY')!);
+    return q
+        .map((key, value) => MapEntry(key, encrypt(aes, base64.decode(value))));
+  }, q)
+      .then((rsp) => rsp);
 }
 
-Uint8List _decrypt(Map<String, String> q) {
-  CryptoRSAPrivateKey key = CryptoRSAPrivateKey.decode(q['key']!);
-  Uint8List ciphertext = base64.decode(q['ciphertext']!);
+Future<Uint8List> encryptAsync(CryptoRSAPublicKey key, Uint8List plaintext) {
+  Map<String, String> q = {};
+  q['plaintext'] = base64.encode(plaintext);
+  q['key'] = key.encode();
+  return compute(
+          (Map<String, String> q) => encrypt(
+              CryptoRSAPublicKey.decode(q['key']!),
+              base64.decode(q['plaintext']!)),
+          q)
+      .then((ciphertext) => ciphertext);
+}
+
+Uint8List decrypt(CryptoRSAPrivateKey key, Uint8List ciphertext) {
   final decryptor = OAEPEncoding(RSAEngine())
     ..init(false, PrivateKeyParameter<RSAPrivateKey>(key));
   return utils.processInBlocks(decryptor, ciphertext);
 }
 
-Future<Uint8List> sign(Uint8List message, CryptoRSAPrivateKey key) {
+Future<Uint8List> decryptAsync(CryptoRSAPrivateKey key, Uint8List ciphertext) {
   Map<String, String> q = {};
-  q['message'] = base64.encode(message);
+  q['ciphertext'] = base64.encode(ciphertext);
   q['key'] = key.encode();
-  return compute(_sign, q).then((signature) => signature);
+  return compute(
+          (Map<String, String> q) => decrypt(
+              CryptoRSAPrivateKey.decode(q['key']!),
+              base64.decode(q['ciphertext']!)),
+          q)
+      .then((plaintext) => plaintext);
 }
 
-Uint8List _sign(Map<String, String> q) {
-  CryptoRSAPrivateKey key = CryptoRSAPrivateKey.decode(q['key']!);
-  Uint8List message = base64.decode(q['message']!);
+Uint8List sign(CryptoRSAPrivateKey key, Uint8List message) {
   RSASigner signer = RSASigner(SHA256Digest(), '0609608648016503040201');
   signer.init(true, PrivateKeyParameter<RSAPrivateKey>(key));
   RSASignature signature = signer.generateSignature(message);
   return signature.bytes;
 }
 
-Future<bool> verify(
-    Uint8List message, Uint8List signature, CryptoRSAPublicKey key) {
-  Map<String, String> q = {};
-  q['message'] = base64.encode(message);
-  q['signature'] = base64.encode(signature);
-  q['key'] = key.encode();
-  return compute(_verify, q).then((isVerified) => isVerified);
+Future<Map<String, Uint8List>> signBulk(
+    CryptoRSAPrivateKey key, Map<String, Uint8List> req) {
+  Map<String, String> q =
+      req.map((key, value) => MapEntry(key, base64.encode(value)));
+  q['CRYPTORSAPRIVATEKEY'] = key.encode();
+  return compute((Map<String, String> q) {
+    CryptoRSAPrivateKey aes =
+        CryptoRSAPrivateKey.decode(q.remove('CRYPTORSAPRIVATEKEY')!);
+    return q
+        .map((key, value) => MapEntry(key, sign(aes, base64.decode(value))));
+  }, q)
+      .then((rsp) => rsp);
 }
 
-bool _verify(Map<String, String> q) {
-  Uint8List message = base64.decode(q['message']!);
-  Uint8List signature = base64.decode(q['signature']!);
-  CryptoRSAPublicKey key = CryptoRSAPublicKey.decode(q['key']!);
+Future<Uint8List> signAsync(CryptoRSAPrivateKey key, Uint8List message) {
+  Map<String, String> q = {};
+  q['message'] = base64.encode(message);
+  q['key'] = key.encode();
+  return compute(
+          (Map<String, String> q) => sign(CryptoRSAPrivateKey.decode(q['key']!),
+              base64.decode(q['message']!)),
+          q)
+      .then((signature) => signature);
+}
+
+bool verify(CryptoRSAPublicKey key, Uint8List message, Uint8List signature) {
   RSASignature rsaSignature = RSASignature(signature);
   final verifier = RSASigner(SHA256Digest(), '0609608648016503040201');
   verifier.init(false, PublicKeyParameter<RSAPublicKey>(key));
@@ -106,4 +131,36 @@ bool _verify(Map<String, String> q) {
   } on ArgumentError {
     return false;
   }
+}
+
+Future<bool> verifyAsync(
+    CryptoRSAPublicKey key, Uint8List message, Uint8List signature) {
+  Map<String, String> q = {};
+  q['message'] = base64.encode(message);
+  q['signature'] = base64.encode(signature);
+  q['key'] = key.encode();
+  return compute(
+          (Map<String, String> q) => verify(
+              CryptoRSAPublicKey.decode(q['key']!),
+              base64.decode(q['message']!),
+              base64.decode(q['signature']!)),
+          q)
+      .then((isVerified) => isVerified);
+}
+
+Future<bool> verifyAll(CryptoRSAPublicKey key, Map<Uint8List, Uint8List> req) {
+  Map<String, String> q = req
+      .map((key, value) => MapEntry(base64.encode(key), base64.encode(value)));
+  q['CRYPTORSAPUBLICKEY'] = key.encode();
+  return compute((Map<String, String> q) {
+    CryptoRSAPublicKey aes =
+        CryptoRSAPublicKey.decode(q.remove('CRYPTORSAPUBLICKEY')!);
+    for (MapEntry<String, String> entry in q.entries) {
+      if (!verify(aes, base64.decode(entry.key), base64.decode(entry.value))) {
+        return false;
+      }
+    }
+    return true;
+  }, q)
+      .then((isVerified) => isVerified);
 }

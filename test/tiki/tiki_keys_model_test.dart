@@ -19,7 +19,7 @@ void main() {
   group('tiki-keys-model unit tests', () {
     test('encrypt_success', () async {
       TikiKeysService keysService = TikiKeysService();
-      CryptoAESKey dataKey = await aes.generate();
+      CryptoAESKey dataKey = aes.generate();
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);
@@ -29,7 +29,7 @@ void main() {
 
     test('decrypt_success', () async {
       TikiKeysService keysService = TikiKeysService();
-      CryptoAESKey dataKey = await aes.generate();
+      CryptoAESKey dataKey = aes.generate();
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
           await rsa.generate();
       TikiKeysModel model = TikiKeysModel('1234abcd', signKeyPair, dataKey);

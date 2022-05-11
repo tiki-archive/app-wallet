@@ -14,7 +14,8 @@ dependencies:
     path: ../
   cupertino_icons: ^1.0.2
   uuid: ^3.0.5
-
+  tiki_localchain: ^0.0.5
+  pointycastle: ^3.5.2
 
 dev_dependencies:
   flutter_test:
