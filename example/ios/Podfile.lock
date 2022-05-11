@@ -15,15 +15,12 @@ PODS:
   - SQLCipher/common (4.4.2)
   - SQLCipher/standard (4.4.2):
     - SQLCipher/common
-  - tiki_kv (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - sqflite_sqlcipher (from `.symlinks/plugins/sqflite_sqlcipher/ios`)
-  - tiki_kv (from `.symlinks/plugins/tiki_kv/ios`)
 
 SPEC REPOS:
   trunk:
@@ -39,8 +36,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   sqflite_sqlcipher:
     :path: ".symlinks/plugins/sqflite_sqlcipher/ios"
-  tiki_kv:
-    :path: ".symlinks/plugins/tiki_kv/ios"
 
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
@@ -49,7 +44,6 @@ SPEC CHECKSUMS:
   integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
   sqflite_sqlcipher: 70eb7fd8d4f0b0352d0bde5cf345b810737f54bb
   SQLCipher: 1ab0b9486a77d141e72e92ff30681926ed79c07a
-  tiki_kv: 0c122da8304726ce43fc8a129e7a1babe43bb30c
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 

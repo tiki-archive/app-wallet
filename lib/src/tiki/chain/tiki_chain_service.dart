@@ -57,7 +57,7 @@ class TikiChainService {
             kv: kv,
             database: database,
             refresh: refresh,
-            sign: (textToSign) => rsa.sign(textToSign, _keys.sign.privateKey))
+            sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
         .init(
             address: _keys.address,
             accessToken: accessToken,
@@ -72,57 +72,44 @@ class TikiChainService {
   //note: think about if we need a special case for writes when cache is still building.
   Future<Map<String, TikiChainCacheModel>> write(
       Map<String, BlockContents> reqs,
-      {String? accessToken,
-      int pageSize = 100}) async {
+      {String? accessToken}) async {
+    Map<String, Uint8List> encrypted = await aes.encryptBulk(
+        _keys.data,
+        reqs.map(
+            (key, value) => MapEntry(key, TikiLocalchain.codec.encode(value))));
+
+    Map<String, Block> blockMap = {};
+    for (Block block in (await _localchain.append(List.of(encrypted.values)))) {
+      if (block.contents != null) {
+        String id = base64.encode(block.contents!);
+        blockMap[id] = block;
+      }
+    }
+
     Map<String, TikiChainCacheModel> rsp = {};
-    int numPages = (reqs.length / pageSize).ceil();
+    List<TikiChainCacheModel> toCache = List.empty(growable: true);
+    for (MapEntry<String, Uint8List> entry in encrypted.entries) {
+      Block block = blockMap[base64.encode(entry.value)]!;
+      BlockContents contents = reqs[entry.key]!;
+      Uint8List hash = _hash(block);
 
-    for (int i = 0; i < numPages; i++) {
-      int start = i * pageSize;
-      int end = start + pageSize > reqs.length ? reqs.length : start + pageSize;
+      _syncChain.syncBlock(
+          accessToken: accessToken,
+          hash: hash,
+          block: TikiSyncChainBlock(
+              contents: block.contents,
+              created: block.created,
+              previous: block.previousHash));
 
-      List<Future<MapEntry<String, Uint8List>>> encrypting =
-          List.empty(growable: true);
-      for (int j = start; j < end; j++) {
-        MapEntry<String, BlockContents> entry = reqs.entries.elementAt(j);
-        encrypting.add(_encrypt(entry.key, entry.value));
-      }
+      TikiChainCacheModel cacheBlock = TikiChainCacheModel(
+          hash: hash,
+          previousHash: block.previousHash,
+          contents: contents.payload,
+          created: block.created,
+          schema: contents.schema);
 
-      Map<String, Uint8List> encrypted =
-          Map.fromEntries(await Future.wait(encrypting));
-
-      Map<String, Block> blockMap = {};
-      for (var block in (await _localchain.append(List.of(encrypted.values)))) {
-        if (block.contents != null) {
-          String id = base64.encode(block.contents!);
-          blockMap[id] = block;
-        }
-      }
-
-      List<TikiChainCacheModel> toCache = List.empty(growable: true);
-      for (var entry in encrypted.entries) {
-        Block block = blockMap[base64.encode(entry.value)]!;
-        BlockContents contents = reqs[entry.key]!;
-        Uint8List hash = _hash(block);
-
-        _syncChain.syncBlock(
-            accessToken: accessToken,
-            hash: hash,
-            block: TikiSyncChainBlock(
-                contents: block.contents,
-                created: block.created,
-                previous: block.previousHash));
-
-        TikiChainCacheModel cacheBlock = TikiChainCacheModel(
-            hash: hash,
-            previousHash: block.previousHash,
-            contents: contents.payload,
-            created: block.created,
-            schema: contents.schema);
-
-        toCache.add(cacheBlock);
-        rsp[entry.key] = cacheBlock;
-      }
+      toCache.add(cacheBlock);
+      rsp[entry.key] = cacheBlock;
 
       await _cacheRepository.insertAll(toCache);
     }
@@ -175,13 +162,9 @@ class TikiChainService {
   }
 
   Future<BlockContents> _decrypt(Uint8List ciphertext) async {
-    Uint8List plaintext = await aes.decrypt(ciphertext, _keys.data);
+    Uint8List plaintext = aes.decrypt(_keys.data, ciphertext);
     return TikiLocalchain.codec.decode(plaintext);
   }
-
-  Future<MapEntry<String, Uint8List>> _encrypt(
-          String id, BlockContents contents) =>
-      aes.encryptWithId(id, TikiLocalchain.codec.encode(contents), _keys.data);
 
   // From pointycastle/src/utils
   Uint8List _encodeBigInt(BigInt? number) {

@@ -17,10 +17,11 @@ import '../crypto_utils.dart' as utils;
 import 'crypto_ec_private_key.dart';
 import 'crypto_ec_public_key.dart';
 
-Future<AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey>> generate() =>
-    compute(_generate, "").then((keyPair) => keyPair);
+Future<AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey>>
+    generateAsync() =>
+        compute((_) => generate(), "").then((keyPair) => keyPair);
 
-AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> _generate(_) {
+AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> generate() {
   final ECKeyGeneratorParameters keyGeneratorParameters =
       ECKeyGeneratorParameters(ECCurve_secp256r1());
 
@@ -37,16 +38,7 @@ AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> _generate(_) {
       CryptoECPrivateKey(privateKey.d, privateKey.parameters));
 }
 
-Future<Uint8List> sign(Uint8List message, CryptoECPrivateKey key) {
-  Map<String, String> q = {};
-  q['message'] = base64.encode(message);
-  q['key'] = key.encode();
-  return compute(_sign, q).then((signature) => signature);
-}
-
-Uint8List _sign(Map<String, String> q) {
-  Uint8List message = base64.decode(q['message']!);
-  CryptoECPrivateKey key = CryptoECPrivateKey.decode(q['key']!);
+Uint8List sign(CryptoECPrivateKey key, Uint8List message) {
   Signer signer = Signer("SHA-256/ECDSA");
   signer.init(
       true,
@@ -62,19 +54,31 @@ Uint8List _sign(Map<String, String> q) {
   return bytesBuilder.toBytes();
 }
 
-Future<bool> verify(
-    Uint8List message, Uint8List signature, CryptoECPublicKey key) {
+Future<Uint8List> signAsync(CryptoECPrivateKey key, Uint8List message) {
   Map<String, String> q = {};
   q['message'] = base64.encode(message);
-  q['signature'] = base64.encode(signature);
   q['key'] = key.encode();
-  return compute(_verify, q).then((isVerified) => isVerified);
+  return compute(
+          (Map<String, String> q) => sign(CryptoECPrivateKey.decode(q['key']!),
+              base64.decode(q['message']!)),
+          q)
+      .then((signature) => signature);
 }
 
-bool _verify(Map<String, String> q) {
-  Uint8List signature = base64.decode(q['signature']!);
-  Uint8List message = base64.decode(q['message']!);
-  CryptoECPublicKey key = CryptoECPublicKey.decode(q['key']!);
+Future<Map<String, Uint8List>> signBulk(
+    CryptoECPrivateKey key, Map<String, Uint8List> req) {
+  Map<String, String> q =
+      req.map((key, value) => MapEntry(key, base64.encode(value)));
+  q['CRYPTOECPRIVATEKEY'] = key.encode();
+  return compute((Map<String, String> q) {
+    CryptoECPrivateKey ec =
+        CryptoECPrivateKey.decode(q.remove('CRYPTOECPRIVATEKEY')!);
+    return q.map((key, value) => MapEntry(key, sign(ec, base64.decode(value))));
+  }, q)
+      .then((rsp) => rsp);
+}
+
+bool verify(CryptoECPublicKey key, Uint8List message, Uint8List signature) {
   Signer signer = Signer("SHA-256/ECDSA");
   signer.init(false, PublicKeyParameter<ECPublicKey>(key));
 
@@ -85,4 +89,34 @@ bool _verify(Map<String, String> q) {
       ECSignature(utils.decodeBigInt(encodedR), utils.decodeBigInt(encodedS));
 
   return signer.verifySignature(message, ecSignature);
+}
+
+Future<bool> verifyAsync(
+    CryptoECPublicKey key, Uint8List message, Uint8List signature) {
+  Map<String, String> q = {};
+  q['message'] = base64.encode(message);
+  q['signature'] = base64.encode(signature);
+  q['key'] = key.encode();
+  return compute(
+          (Map<String, String> q) => verify(CryptoECPublicKey.decode(q['key']!),
+              base64.decode(q['message']!), base64.decode(q['signature']!)),
+          q)
+      .then((isVerified) => isVerified);
+}
+
+Future<bool> verifyAll(CryptoECPublicKey key, Map<Uint8List, Uint8List> req) {
+  Map<String, String> q = req
+      .map((key, value) => MapEntry(base64.encode(key), base64.encode(value)));
+  q['CRYPTOECPUBLICKEY'] = key.encode();
+  return compute((Map<String, String> q) {
+    CryptoECPublicKey ec =
+        CryptoECPublicKey.decode(q.remove('CRYPTOECPUBLICKEY')!);
+    for (MapEntry<String, String> entry in q.entries) {
+      if (!verify(ec, base64.decode(entry.key), base64.decode(entry.value))) {
+        return false;
+      }
+    }
+    return true;
+  }, q)
+      .then((isVerified) => isVerified);
 }

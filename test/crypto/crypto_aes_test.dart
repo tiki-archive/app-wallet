@@ -13,52 +13,52 @@ import 'package:tiki_wallet/src/crypto/crypto_utils.dart' as utils;
 
 void main() {
   group('crypto-aes unit tests', () {
-    test('generate_success', () async {
-      await aes.generate();
+    test('generate_success', () {
+      aes.generate();
     });
 
     test('encode_success', () async {
-      CryptoAESKey key = await aes.generate();
+      CryptoAESKey key = aes.generate();
       String keyEncoded = key.encode();
       expect(keyEncoded.isNotEmpty, true);
     });
 
     test('keyDecode_success', () async {
-      CryptoAESKey key = await aes.generate();
+      CryptoAESKey key = aes.generate();
       String keyEncoded = key.encode();
       CryptoAESKey keyDecoded = CryptoAESKey.decode(keyEncoded);
       expect(keyDecoded.key, key.key);
     });
 
     test('encrypt_success', () async {
-      CryptoAESKey key = await aes.generate();
+      CryptoAESKey key = aes.generate();
       String plaintext = "hello";
       Uint8List cipherText =
-          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key);
+          aes.encrypt(key, Uint8List.fromList(utf8.encode(plaintext)));
       expect(cipherText.isNotEmpty, true);
     });
 
     test('decrypt_success', () async {
-      CryptoAESKey key = await aes.generate();
+      CryptoAESKey key = aes.generate();
       String plaintext = "hello";
       Uint8List cipherText =
-          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key);
-      String result = utf8.decode(await aes.decrypt(cipherText, key));
+          aes.encrypt(key, Uint8List.fromList(utf8.encode(plaintext)));
+      String result = utf8.decode(await aes.decryptAsync(key, cipherText));
       expect(result, plaintext);
     });
 
     test('derive_success', () async {
       Uint8List salt = utils.secureRandom().nextBytes(16);
       String passphrase = 'passphrase';
-      CryptoAESKey key1 = await aes.derive(passphrase, salt: salt);
-      CryptoAESKey key2 = await aes.derive(passphrase, salt: salt);
+      CryptoAESKey key1 = aes.derive(passphrase, salt: salt);
+      CryptoAESKey key2 = aes.derive(passphrase, salt: salt);
 
       expect(key1.key, key2.key);
 
       String plaintext = "hello";
       Uint8List cipherText =
-          await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key1);
-      String result = utf8.decode(await aes.decrypt(cipherText, key1));
+          aes.encrypt(key1, Uint8List.fromList(utf8.encode(plaintext)));
+      String result = utf8.decode(await aes.decryptAsync(key1, cipherText));
       expect(result, plaintext);
     });
   });

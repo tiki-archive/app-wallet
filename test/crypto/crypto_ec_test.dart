@@ -14,13 +14,13 @@ import 'package:tiki_wallet/src/crypto/ec/crypto_ec_public_key.dart';
 
 void main() {
   group('crypto-ec unit tests', () {
-    test('generate_success', () async {
-      await ec.generate();
+    test('generate_success', () {
+      ec.generate();
     });
 
     test('encode_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
-          await ec.generate();
+          ec.generate();
       String publicKeyEncoded = keyPair.publicKey.encode();
       String privateKeyEncoded = keyPair.privateKey.encode();
       expect(publicKeyEncoded.isNotEmpty, true);
@@ -29,7 +29,7 @@ void main() {
 
     test('publicKeyDecode_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
-          await ec.generate();
+          ec.generate();
       String publicKeyEncoded = keyPair.publicKey.encode();
       CryptoECPublicKey publicKeyDecoded =
           CryptoECPublicKey.decode(publicKeyEncoded);
@@ -41,7 +41,7 @@ void main() {
 
     test('privateKeyDecode_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
-          await ec.generate();
+          ec.generate();
       String privateKeyEncoded = keyPair.privateKey.encode();
       CryptoECPrivateKey privateKeyDecoded =
           CryptoECPrivateKey.decode(privateKeyEncoded);
@@ -53,21 +53,21 @@ void main() {
 
     test('sign_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
-          await ec.generate();
+          ec.generate();
       String message = "hello world";
-      Uint8List signature = await ec.sign(
-          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
+      Uint8List signature =
+          ec.sign(keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
       expect(signature.isNotEmpty, true);
     });
 
     test('verify_success', () async {
       AsymmetricKeyPair<CryptoECPublicKey, CryptoECPrivateKey> keyPair =
-          await ec.generate();
+          ec.generate();
       String message = "hello world";
-      Uint8List signature = await ec.sign(
-          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
-      bool verify = await ec.verify(Uint8List.fromList(utf8.encode(message)),
-          signature, keyPair.publicKey);
+      Uint8List signature =
+          ec.sign(keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      bool verify = ec.verify(keyPair.publicKey,
+          Uint8List.fromList(utf8.encode(message)), signature);
       expect(verify, true);
     });
   });

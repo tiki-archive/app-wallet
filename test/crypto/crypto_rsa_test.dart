@@ -14,13 +14,13 @@ import 'package:tiki_wallet/src/crypto/rsa/crypto_rsa_public_key.dart';
 
 void main() {
   group('crypto-rsa unit tests', () {
-    test('generate_success', () async {
-      await rsa.generate();
+    test('generate_success', () {
+      rsa.generate();
     });
 
     test('encode_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String publicKeyEncoded = keyPair.publicKey.encode();
       String privateKeyEncoded = keyPair.privateKey.encode();
       expect(publicKeyEncoded.isNotEmpty, true);
@@ -29,7 +29,7 @@ void main() {
 
     test('publicKeyDecode_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String publicKeyEncoded = keyPair.publicKey.encode();
       CryptoRSAPublicKey publicKeyDecoded =
           CryptoRSAPublicKey.decode(publicKeyEncoded);
@@ -39,7 +39,7 @@ void main() {
 
     test('privateKeyDecode_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String privateKeyEncoded = keyPair.privateKey.encode();
       CryptoRSAPrivateKey privateKeyDecoded =
           CryptoRSAPrivateKey.decode(privateKeyEncoded);
@@ -56,9 +56,9 @@ void main() {
 
     test('encrypt_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
-      Uint8List cipherText = await rsa.encrypt(
-          Uint8List.fromList(utf8.encode("hello world")), keyPair.publicKey);
+          rsa.generate();
+      Uint8List cipherText = rsa.encrypt(
+          keyPair.publicKey, Uint8List.fromList(utf8.encode("hello world")));
       String cipherTextString = String.fromCharCodes(cipherText);
 
       expect(cipherText.isNotEmpty, true);
@@ -67,32 +67,32 @@ void main() {
 
     test('decrypt_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String plainText = "hello world";
-      Uint8List cipherText = await rsa.encrypt(
-          Uint8List.fromList(utf8.encode(plainText)), keyPair.publicKey);
+      Uint8List cipherText = rsa.encrypt(
+          keyPair.publicKey, Uint8List.fromList(utf8.encode(plainText)));
       String result =
-          utf8.decode(await rsa.decrypt(cipherText, keyPair.privateKey));
+          utf8.decode(await rsa.decryptAsync(keyPair.privateKey, cipherText));
       expect(result, plainText);
     });
 
     test('sign_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String message = "hello world";
-      Uint8List signature = await rsa.sign(
-          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
+      Uint8List signature = rsa.sign(
+          keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
       expect(signature.isNotEmpty, true);
     });
 
     test('verify_success', () async {
       AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> keyPair =
-          await rsa.generate();
+          rsa.generate();
       String message = "hello world";
-      Uint8List signature = await rsa.sign(
-          Uint8List.fromList(utf8.encode(message)), keyPair.privateKey);
-      bool verify = await rsa.verify(Uint8List.fromList(utf8.encode(message)),
-          signature, keyPair.publicKey);
+      Uint8List signature = rsa.sign(
+          keyPair.privateKey, Uint8List.fromList(utf8.encode(message)));
+      bool verify = rsa.verify(keyPair.publicKey,
+          Uint8List.fromList(utf8.encode(message)), signature);
       expect(verify, true);
     });
   });

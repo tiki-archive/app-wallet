@@ -33,7 +33,7 @@ class TikiKeysService {
       : _keystore = KeystoreService(secureStorage: secureStorage);
 
   Future<TikiKeysModel> generate() async {
-    CryptoAESKey dataKey = await aes.generate();
+    CryptoAESKey dataKey = aes.generate();
     AsymmetricKeyPair<CryptoRSAPublicKey, CryptoRSAPrivateKey> signKeyPair =
         await rsa.generate();
     String address = _address(signKeyPair.publicKey);
@@ -83,9 +83,9 @@ class TikiKeysService {
       String passphrase, Uint8List ciphertext) async {
     try {
       Uint8List salt = ciphertext.sublist(0, _SALT_LEN);
-      CryptoAESKey key = await aes.derive(passphrase, salt: salt);
-      String plaintext =
-          utf8.decode(await aes.decrypt(ciphertext.sublist(_SALT_LEN), key));
+      CryptoAESKey key = aes.derive(passphrase, salt: salt);
+      String plaintext = utf8
+          .decode(await aes.decryptAsync(key, ciphertext.sublist(_SALT_LEN)));
       List<String> encodedKeys = plaintext.split(_DELIMITER);
       if (encodedKeys.length >= 3) {
         CryptoRSAPrivateKey signPrivate =
@@ -103,7 +103,7 @@ class TikiKeysService {
 
   Future<Uint8List> encrypt(String passphrase, TikiKeysModel keys) async {
     Uint8List salt = cryptoutils.secureRandom().nextBytes(_SALT_LEN);
-    CryptoAESKey key = await aes.derive(passphrase, salt: salt);
+    CryptoAESKey key = aes.derive(passphrase, salt: salt);
     String plaintext = keys.address +
         _DELIMITER +
         keys.sign.privateKey.encode() +
@@ -111,8 +111,7 @@ class TikiKeysService {
         keys.data.encode();
     BytesBuilder payload = BytesBuilder();
     payload.add(salt);
-    payload.add(
-        await aes.encrypt(Uint8List.fromList(utf8.encode(plaintext)), key));
+    payload.add(aes.encrypt(key, Uint8List.fromList(utf8.encode(plaintext))));
     return payload.toBytes();
   }
 
