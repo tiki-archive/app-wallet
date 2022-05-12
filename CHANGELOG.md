@@ -1,3 +1,7 @@
+## 0.0.19
+
+* fix bug with access token for sync chain 
+
 ## 0.0.18
 
 * use access token function 
