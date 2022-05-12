@@ -19,19 +19,20 @@ class TikiBkupService {
   final HttppClient _client;
   final TikiBkupRepository _repository;
   final Future<void> Function(void Function(String?)? onSuccess)? refresh;
+  final String? Function() _accessToken;
 
-  TikiBkupService({Httpp? httpp, this.refresh})
+  TikiBkupService({Httpp? httpp, this.refresh, String? Function()? accessToken})
       : _repository = TikiBkupRepository(),
-        _client = httpp == null ? Httpp().client() : httpp.client();
+        _client = httpp == null ? Httpp().client() : httpp.client(),
+        _accessToken = accessToken ?? (() => null);
 
   Future<void> backup(
           {required String email,
-          required String accessToken,
           required String pin,
           required Uint8List ciphertext,
           Function(Object)? onError,
           Function()? onSuccess}) =>
-      _auth(accessToken, onError, (token, onError) {
+      _auth(_accessToken(), onError, (token, onError) {
         RegExp pinCheck = RegExp(r'[0-9]{6,}$');
         if (!pinCheck.hasMatch(pin)) {
           throw ArgumentError('pin must be 6+ digits');
@@ -49,12 +50,11 @@ class TikiBkupService {
 
   Future<void> recover(
           {required String email,
-          required String accessToken,
           required String pin,
           Function(Object)? onError,
           Function(Uint8List?)? onSuccess}) =>
       _auth(
-          accessToken,
+          _accessToken(),
           onError,
           (token, onError) => _repository.find(
               client: _client,
@@ -75,7 +75,6 @@ class TikiBkupService {
 
   Future<void> cycle(
       {required String email,
-      required String accessToken,
       required String oldPin,
       required String newPin,
       required Uint8List ciphertext,
@@ -86,7 +85,7 @@ class TikiBkupService {
       throw ArgumentError('new pin must be different and 6+ digits');
     }
     return _auth(
-        accessToken,
+        _accessToken(),
         onError,
         (token, onError) => _repository.update(
             client: _client,
@@ -100,8 +99,11 @@ class TikiBkupService {
             onSuccess: onSuccess));
   }
 
-  Future<T> _auth<T>(String accessToken, Function(Object)? onError,
-      Future<T> Function(String, Future<void> Function(Object)) request) async {
+  Future<T> _auth<T>(
+      String? accessToken,
+      Function(Object)? onError,
+      Future<T> Function(String?, Future<void> Function(Object))
+          request) async {
     return request(accessToken, (error) async {
       if (error is TikiBkupErrorHttp && refresh != null) {
         await refresh!((token) async {

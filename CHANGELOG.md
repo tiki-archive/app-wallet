@@ -1,3 +1,7 @@
+## 0.0.18
+
+* use access token function 
+
 ## 0.0.17
 
 * added sync func for crypto

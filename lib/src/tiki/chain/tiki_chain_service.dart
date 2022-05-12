@@ -32,6 +32,7 @@ class TikiChainService {
   late final TikiChainCacheRepository _cacheRepository;
   late final TikiChainPropsRepository _propsRepository;
   late final TikiSyncChain _syncChain;
+  late final String? Function() _accessToken;
 
   TikiChainService(this._keys);
 
@@ -39,30 +40,29 @@ class TikiChainService {
       {required Database database,
       Httpp? httpp,
       TikiKv? kv,
-      String? accessToken,
+      String? Function()? accessToken,
       Future<void> Function(void Function(String?)? onSuccess)?
           refresh}) async {
     if (!database.isOpen) {
       throw ArgumentError.value(database, 'database', 'database is not open');
     }
-
+    _accessToken = accessToken ?? () => null;
     _cacheRepository = TikiChainCacheRepository(database);
     _propsRepository = TikiChainPropsRepository(database);
     await _cacheRepository.createTable();
     await _propsRepository.createTable();
     _localchain = await TikiLocalchain().open(_keys.address);
-
-    //todo fix the sign future in sync
+    
     _syncChain = await TikiSyncChain(
-        httpp: httpp,
-        kv: kv,
-        database: database,
-        refresh: refresh,
-        sign: (textToSign) =>
-            Future.value(rsa.sign(_keys.sign.privateKey, textToSign))).init(
-        address: _keys.address,
-        accessToken: accessToken,
-        publicKey: _keys.sign.publicKey.encode());
+            httpp: httpp,
+            kv: kv,
+            database: database,
+            refresh: refresh,
+            sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
+        .init(
+            address: _keys.address,
+            accessToken: _accessToken(),
+            publicKey: _keys.sign.publicKey.encode());
 
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
@@ -72,8 +72,7 @@ class TikiChainService {
 
   //note: think about if we need a special case for writes when cache is still building.
   Future<Map<String, TikiChainCacheModel>> write(
-      Map<String, BlockContents> reqs,
-      {String? accessToken}) async {
+      Map<String, BlockContents> reqs) async {
     Map<String, Uint8List> encrypted = await aes.encryptBulk(
         _keys.data,
         reqs.map(
@@ -95,7 +94,7 @@ class TikiChainService {
       Uint8List hash = _hash(block);
 
       _syncChain.syncBlock(
-          accessToken: accessToken,
+          accessToken: _accessToken(),
           hash: hash,
           block: TikiSyncChainBlock(
               contents: block.contents,
@@ -117,8 +116,8 @@ class TikiChainService {
     return rsp;
   }
 
-  Future<Map<String, TikiChainCacheModel>> mint(Map<String, Uint8List> reqs,
-      {String? accessToken}) async {
+  Future<Map<String, TikiChainCacheModel>> mint(
+      Map<String, Uint8List> reqs) async {
     Map<String, BlockContentsDataNft> writeReq = reqs.map((key, value) {
       Uint8List proof = secureRandom().nextBytes(32);
       BytesBuilder builder = BytesBuilder();
@@ -131,7 +130,7 @@ class TikiChainService {
               fingerprint: base64.encode(fingerprint),
               proof: base64.encode(proof)));
     });
-    return write(writeReq, accessToken: accessToken);
+    return write(writeReq);
   }
 
   Future<TikiChainCacheModel?> read(Uint8List hash) =>
