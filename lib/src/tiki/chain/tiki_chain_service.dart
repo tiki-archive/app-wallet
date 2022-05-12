@@ -52,18 +52,17 @@ class TikiChainService {
     await _cacheRepository.createTable();
     await _propsRepository.createTable();
     _localchain = await TikiLocalchain().open(_keys.address);
-
-    //todo fix the sign future in sync
+    
     _syncChain = await TikiSyncChain(
-        httpp: httpp,
-        kv: kv,
-        database: database,
-        refresh: refresh,
-        sign: (textToSign) =>
-            Future.value(rsa.sign(_keys.sign.privateKey, textToSign))).init(
-        address: _keys.address,
-        accessToken: _accessToken(),
-        publicKey: _keys.sign.publicKey.encode());
+            httpp: httpp,
+            kv: kv,
+            database: database,
+            refresh: refresh,
+            sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
+        .init(
+            address: _keys.address,
+            accessToken: _accessToken(),
+            publicKey: _keys.sign.publicKey.encode());
 
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
