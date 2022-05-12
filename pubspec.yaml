@@ -20,7 +20,7 @@ dependencies:
   httpp: ^0.0.4
   tiki_localchain: ^0.0.5
   tiki_kv: ^0.1.1
-  tiki_syncchain: ^0.0.3
+  tiki_syncchain: ^0.0.4
 
 dev_dependencies:
   flutter_test:
