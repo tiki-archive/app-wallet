@@ -1,3 +1,7 @@
+## 0.0.20
+
+* fix bug with writing to cache
+
 ## 0.0.19
 
 * fix bug with access token for sync chain 
