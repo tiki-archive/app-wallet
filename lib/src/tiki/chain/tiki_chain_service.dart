@@ -111,9 +111,9 @@ class TikiChainService {
 
       toCache.add(cacheBlock);
       rsp[entry.key] = cacheBlock;
-
-      await _cacheRepository.insertAll(toCache);
     }
+
+    await _cacheRepository.insertAll(toCache);
     return rsp;
   }
 
