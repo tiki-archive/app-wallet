@@ -60,7 +60,10 @@ class TikiChainService {
             refresh: refresh,
             accessToken: _accessToken,
             sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
-        .init(address: _keys.address, publicKey: _keys.sign.publicKey.encode());
+        .init(
+            address: _keys.address,
+            publicKey: _keys.sign.publicKey.encode(),
+            onError: (err) => throw StateError('failed to init sync chain'));
 
     TikiChainPropsModel? cachedOn =
         await _propsRepository.get(TikiChainPropsKey.cachedOn);
@@ -108,9 +111,9 @@ class TikiChainService {
 
       toCache.add(cacheBlock);
       rsp[entry.key] = cacheBlock;
-
-      await _cacheRepository.insertAll(toCache);
     }
+
+    await _cacheRepository.insertAll(toCache);
     return rsp;
   }
 
