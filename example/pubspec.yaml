@@ -16,6 +16,7 @@ dependencies:
   uuid: ^3.0.5
   tiki_localchain: ^0.0.5
   pointycastle: ^3.5.2
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
