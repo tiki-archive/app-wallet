@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:logging/logging.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
+import 'package:tiki_localchain/tiki_localchain.dart';
 
 import 'tiki_chain_cache_model.dart';
 
@@ -65,6 +66,22 @@ class TikiChainCacheRepository {
     } else {
       _log.finest('got $hash');
       return TikiChainCacheModel.fromMap(rows[0]);
+    }
+  }
+
+  Future<List<TikiChainCacheModel>> getDataNfts(int page, {int pageSize = 100, Transaction? txn}) async {
+    int offset = page <= 1 ? 0 : pageSize * page - 1;
+    List<Map<String, Object?>> rows = await (txn ?? _database).query(_table,
+        where: 'block_schema = ?',
+        whereArgs: [BlockContentsSchema.dataNft.code],
+        offset: offset,
+        limit: 100);
+    if (rows.isEmpty) {
+      _log.finest('no data nft blocks in cache page #$page');
+      return [];
+    } else {
+      _log.finest('got data nft ${rows.length} blocks from page #$page');
+      return rows.map((row) => TikiChainCacheModel.fromMap(row)).toList();
     }
   }
 }

@@ -153,6 +153,20 @@ class TikiChainService {
 
   Future<void> drop() => _cacheRepository.drop();
 
+  Future getDataNfts({int max = 100}) async{
+    List<TikiChainCacheModel> nftList = [];
+    while(nftList.length < max){
+      int page = 0;
+      List<TikiChainCacheModel> cached = await _cacheRepository.getDataNfts(page);
+      if(cached.isEmpty) break;
+      nftList.addAll(cached.where(
+          (cacheModel) => cacheModel.schema == BlockContentsSchema.dataNft
+      ));
+      page++;
+    }
+    return nftList;
+  }
+
   Uint8List _hash(Block block) {
     BytesBuilder bytesBuilder = BytesBuilder();
     bytesBuilder.add(block.contents!);
