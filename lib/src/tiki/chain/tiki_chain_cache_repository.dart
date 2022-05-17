@@ -77,6 +77,7 @@ class TikiChainCacheRepository {
         'SELECT hash, contents, previous_hash, created_epoch, block_schema '
         'FROM $_table WHERE hash IN $q');
     if (rows.isEmpty) {
+      _log.finest('no records found');
       return List.empty();
     } else {
       _log.finest('got ${rows.length} blocks');
