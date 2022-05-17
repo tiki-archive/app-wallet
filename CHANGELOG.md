@@ -1,3 +1,8 @@
+## 0.0.21
+
+* switch to a public block model instead of cache
+* when reading blocks, get current sync state
+
 ## 0.0.20
 
 * fix bug with writing to cache

@@ -16,6 +16,7 @@ dependencies:
   uuid: ^3.0.5
   tiki_localchain: ^0.0.5
   pointycastle: ^3.5.2
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +27,13 @@ dev_dependencies:
     sdk: flutter
   test: any
   flutter_lints: ^1.0.0
+
+dependency_overrides:
+  sqflite:
+    git:
+      url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
+      path: sqflite
+      ref: fmdb_override
 
 flutter:
   uses-material-design: true

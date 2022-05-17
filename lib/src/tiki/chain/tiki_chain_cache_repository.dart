@@ -9,6 +9,7 @@ import 'package:logging/logging.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:sqflite_sqlcipher/sqlite_api.dart';
 
+import '../../crypto/crypto_utils.dart';
 import 'tiki_chain_cache_model.dart';
 
 class TikiChainCacheRepository {
@@ -65,6 +66,22 @@ class TikiChainCacheRepository {
     } else {
       _log.finest('got $hash');
       return TikiChainCacheModel.fromMap(rows[0]);
+    }
+  }
+
+  Future<List<TikiChainCacheModel>> getAll(List<Uint8List> hashes,
+      {Transaction? txn}) async {
+    String q =
+        '(' + hashes.map((hash) => 'x\'${hexEncode(hash)}\'').join(',') + ')';
+    List<Map<String, Object?>> rows = await (txn ?? _database).rawQuery(
+        'SELECT hash, contents, previous_hash, created_epoch, block_schema '
+        'FROM $_table WHERE hash IN $q');
+    if (rows.isEmpty) {
+      _log.finest('no records found');
+      return List.empty();
+    } else {
+      _log.finest('got ${rows.length} blocks');
+      return rows.map((row) => TikiChainCacheModel.fromMap(row)).toList();
     }
   }
 }

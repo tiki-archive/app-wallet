@@ -134,7 +134,7 @@ Uint8List sha256(Uint8List message, {bool sha3 = false}) {
 
 String hexEncode(Uint8List message) {
   String s = "";
-  for (var e in message) {
+  for (int e in message) {
     s += e.toRadixString(16).padLeft(2, "0");
   }
   return s;

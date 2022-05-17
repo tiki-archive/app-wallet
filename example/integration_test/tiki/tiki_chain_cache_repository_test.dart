@@ -6,13 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:tiki_localchain/tiki_localchain.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
-import 'package:uuid/uuid.dart';
+import 'package:tiki_localchain/tiki_localchain.dart';
 import 'package:tiki_wallet/src/tiki/chain/tiki_chain_cache_model.dart';
 import 'package:tiki_wallet/src/tiki/chain/tiki_chain_cache_repository.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -94,6 +95,41 @@ void main() {
       TikiChainCacheModel? found = await repository.get(dummy);
 
       expect(found == null, true);
+    });
+
+    test('getAll success', () async {
+      Database database =
+          await openDatabase(await getDatabasesPath() + '/${Uuid().v4()}.db');
+      TikiChainCacheRepository repository = TikiChainCacheRepository(database);
+      await repository.createTable();
+
+      Uint8List h1 = Uint8List.fromList(utf8.encode(Uuid().v4()));
+      Uint8List h2 = Uint8List.fromList(utf8.encode(Uuid().v4()));
+
+      Uint8List dummy = Uint8List.fromList(utf8.encode('hello'));
+
+      await repository.insert(TikiChainCacheModel(
+          hash: h1,
+          contents: dummy,
+          previousHash: dummy,
+          created: DateTime.now(),
+          schema: BlockContentsSchema.bytea));
+
+      await repository.insert(TikiChainCacheModel(
+          hash: h2,
+          contents: dummy,
+          previousHash: dummy,
+          created: DateTime.now(),
+          schema: BlockContentsSchema.bytea));
+
+      List<TikiChainCacheModel> found = await repository
+          .getAll([h1, h2, Uint8List.fromList(utf8.encode(Uuid().v4()))]);
+
+      expect(found.length, 2);
+      expect(found.any((element) => ListEquality().equals(element.hash, h1)),
+          true);
+      expect(found.any((element) => ListEquality().equals(element.hash, h2)),
+          true);
     });
   });
 }

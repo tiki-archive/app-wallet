@@ -19,6 +19,7 @@ import '../../crypto/aes/crypto_aes.dart' as aes;
 import '../../crypto/crypto_utils.dart';
 import '../../crypto/rsa/crypto_rsa.dart' as rsa;
 import '../keys/tiki_keys_model.dart';
+import 'tiki_chain_block.dart';
 import 'tiki_chain_cache_model.dart';
 import 'tiki_chain_cache_repository.dart';
 import 'tiki_chain_props_key.dart';
@@ -72,7 +73,7 @@ class TikiChainService {
   }
 
   //note: think about if we need a special case for writes when cache is still building.
-  Future<Map<String, TikiChainCacheModel>> write(
+  Future<Map<String, TikiChainBlock>> write(
       Map<String, BlockContents> reqs) async {
     Map<String, Uint8List> encrypted = await aes.encryptBulk(
         _keys.data,
@@ -87,7 +88,7 @@ class TikiChainService {
       }
     }
 
-    Map<String, TikiChainCacheModel> rsp = {};
+    Map<String, TikiChainBlock> rsp = {};
     List<TikiChainCacheModel> toCache = List.empty(growable: true);
     for (MapEntry<String, Uint8List> entry in encrypted.entries) {
       Block block = blockMap[base64.encode(entry.value)]!;
@@ -110,15 +111,14 @@ class TikiChainService {
           schema: contents.schema);
 
       toCache.add(cacheBlock);
-      rsp[entry.key] = cacheBlock;
+      rsp[entry.key] = TikiChainBlock.join(block: block, cache: cacheBlock);
     }
 
     await _cacheRepository.insertAll(toCache);
     return rsp;
   }
 
-  Future<Map<String, TikiChainCacheModel>> mint(
-      Map<String, Uint8List> reqs) async {
+  Future<Map<String, TikiChainBlock>> mint(Map<String, Uint8List> reqs) async {
     Map<String, BlockContentsDataNft> writeReq = reqs.map((key, value) {
       Uint8List proof = secureRandom().nextBytes(32);
       BytesBuilder builder = BytesBuilder();
@@ -134,8 +134,18 @@ class TikiChainService {
     return write(writeReq);
   }
 
-  Future<TikiChainCacheModel?> read(Uint8List hash) =>
-      _cacheRepository.get(hash);
+  Future<List<TikiChainBlock>> read(List<Uint8List> hash) async {
+    List<TikiChainCacheModel> cachedBlocks =
+        await _cacheRepository.getAll(hash);
+    List<DBModel> syncStates =
+        await _syncChain.getState(cachedBlocks.map((b) => b.hash!).toList());
+    Map<Uint8List, DBModel> syncMap =
+        Map.fromEntries(syncStates.map((sync) => MapEntry(sync.hash!, sync)));
+    return cachedBlocks
+        .map((cache) =>
+            TikiChainBlock.join(cache: cache, sync: syncMap[cache.hash]))
+        .toList();
+  }
 
   //TODO one day this will blow up because we can't hold like 50k blocks in memory.
   Future<void> build() async {
