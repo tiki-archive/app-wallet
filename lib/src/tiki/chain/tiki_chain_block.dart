@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:tiki_localchain/tiki_localchain.dart';
 import 'package:tiki_syncchain/tiki_syncchain.dart';
 
-import '../../../tiki_wallet.dart';
+import 'tiki_chain_cache_model.dart';
 
 class TikiChainBlock {
   Uint8List? hash;
