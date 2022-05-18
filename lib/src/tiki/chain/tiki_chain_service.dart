@@ -52,7 +52,8 @@ class TikiChainService {
     _propsRepository = TikiChainPropsRepository(database);
     await _cacheRepository.createTable();
     await _propsRepository.createTable();
-    _localchain = await TikiLocalchain().open(_keys.address);
+    _localchain = await TikiLocalchain()
+        .open('chain-' + hexEncode(base64Decode(_keys.address)));
 
     _syncChain = await TikiSyncChain(
             httpp: httpp,

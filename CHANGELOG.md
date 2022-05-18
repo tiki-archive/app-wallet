@@ -1,3 +1,7 @@
+## 0.0.22
+
+* filename safe chain db names
+
 ## 0.0.21
 
 * switch to a public block model instead of cache
