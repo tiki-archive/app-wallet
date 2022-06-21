@@ -9,14 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite_sqlcipher: ^2.1.0
+  sqflite_sqlcipher: ^2.1.1
+  cupertino_icons: ^1.0.5
+  uuid: ^3.0.6
+  tiki_localchain: ^0.0.6
+  pointycastle: ^3.6.0
+  collection: ^1.16.0
   tiki_wallet:
     path: ../
-  cupertino_icons: ^1.0.2
-  uuid: ^3.0.5
-  tiki_localchain: ^0.0.5
-  pointycastle: ^3.5.2
-  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +34,7 @@ dependency_overrides:
       url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
       path: sqflite
       ref: fmdb_override
+  crypto: ^3.0.1
 
 flutter:
   uses-material-design: true

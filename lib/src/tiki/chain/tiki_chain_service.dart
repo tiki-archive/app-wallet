@@ -35,6 +35,8 @@ class TikiChainService {
   late final TikiSyncChain _syncChain;
   late final String? Function() _accessToken;
 
+  var _amplitude;
+
   TikiChainService(this._keys);
 
   Future<TikiChainService> open(
@@ -81,8 +83,14 @@ class TikiChainService {
         reqs.map(
             (key, value) => MapEntry(key, TikiLocalchain.codec.encode(value))));
 
+    List<Block> blocks = await _localchain.append(List.of(encrypted.values));
+    if(_amplitude != null){
+      _amplitude!.logEvent("MINTED_NFT", eventProperties: {
+        "count" : blocks.length
+      });
+    }
     Map<String, Block> blockMap = {};
-    for (Block block in (await _localchain.append(List.of(encrypted.values)))) {
+    for (Block block in blocks) {
       if (block.contents != null) {
         String id = base64.encode(block.contents!);
         blockMap[id] = block;
@@ -110,11 +118,9 @@ class TikiChainService {
           contents: contents.payload,
           created: block.created,
           schema: contents.schema);
-
       toCache.add(cacheBlock);
       rsp[entry.key] = TikiChainBlock.join(block: block, cache: cacheBlock);
     }
-
     await _cacheRepository.insertAll(toCache);
     return rsp;
   }

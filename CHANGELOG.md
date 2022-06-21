@@ -1,3 +1,8 @@
+## 0.0.23
+
+* Add amplitude monitoring
+* Update dependencies
+
 ## 0.0.22
 
 * filename safe chain db names
