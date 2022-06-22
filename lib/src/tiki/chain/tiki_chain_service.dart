@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:amplitude_flutter/amplitude.dart';
 import 'package:httpp/httpp.dart';
 import 'package:logging/logging.dart';
 import 'package:pointycastle/digests/sha256.dart';
@@ -34,8 +35,7 @@ class TikiChainService {
   late final TikiChainPropsRepository _propsRepository;
   late final TikiSyncChain _syncChain;
   late final String? Function() _accessToken;
-
-  var _amplitude;
+  late final Amplitude? _amplitude;
 
   TikiChainService(this._keys);
 
@@ -45,17 +45,19 @@ class TikiChainService {
       TikiKv? kv,
       String? Function()? accessToken,
       Future<void> Function(void Function(String?)? onSuccess)?
-          refresh}) async {
+      refresh,
+      amplitude}) async {
     if (!database.isOpen) {
       throw ArgumentError.value(database, 'database', 'database is not open');
     }
+    _amplitude = amplitude;
     _accessToken = accessToken ?? () => null;
     _cacheRepository = TikiChainCacheRepository(database);
     _propsRepository = TikiChainPropsRepository(database);
     await _cacheRepository.createTable();
     await _propsRepository.createTable();
     _localchain = await TikiLocalchain()
-        .open('chain-' + hexEncode(base64Decode(_keys.address)));
+        .open('chain-${hexEncode(base64Decode(_keys.address))}');
 
     _syncChain = await TikiSyncChain(
             httpp: httpp,
@@ -63,6 +65,7 @@ class TikiChainService {
             database: database,
             refresh: refresh,
             accessToken: _accessToken,
+            amplitude: _amplitude,
             sign: (textToSign) => rsa.sign(_keys.sign.privateKey, textToSign))
         .init(
             address: _keys.address,
