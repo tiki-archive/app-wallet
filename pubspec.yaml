@@ -1,6 +1,6 @@
 name: tiki_wallet
 description: flutter lib for managing crypto keys
-version: 0.0.24
+version: 0.0.25
 homepage: https://mytiki.com
 repository: https://github.com/tiki/wallet
 issue_tracker: https://github.com/tiki/wallet/issues
@@ -21,7 +21,7 @@ dependencies:
   httpp: ^0.0.4
   tiki_localchain: ^0.0.6
   tiki_kv: ^0.1.1
-  tiki_syncchain: ^0.0.8
+  tiki_syncchain: ^0.0.9
 
 dev_dependencies:
   flutter_test:

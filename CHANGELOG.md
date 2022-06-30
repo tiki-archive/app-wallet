@@ -1,3 +1,7 @@
+## 0.0.25
+
+* bump syncchain to 0.0.9
+
 ## 0.0.24
 
 * Add sentry test
