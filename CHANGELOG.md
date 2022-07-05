@@ -1,3 +1,16 @@
+## 0.0.26
+
+* bump syncchain to 0.0.10
+
+## 0.0.25
+
+* bump syncchain to 0.0.9
+
+## 0.0.24
+
+* Add sentry test
+* Inject amplitude in syncchain
+
 ## 0.0.23
 
 * Add amplitude monitoring
@@ -5,8 +18,7 @@
 
 ## 0.0.22
 
-* filename safe chain db names
-
+* filename safe chain db namesN
 ## 0.0.21
 
 * switch to a public block model instead of cache
