@@ -1,3 +1,7 @@
+## 0.0.26
+
+* bump syncchain to 0.0.10
+
 ## 0.0.25
 
 * bump syncchain to 0.0.9
